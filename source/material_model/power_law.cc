@@ -47,7 +47,7 @@ namespace aspect
 	  // Calculate the effective viscosity. s = K e^n, s = K e^(n-1) e -> eta_eff = K e^(n-1)
 	  SymmetricTensor<2,dim> strain_rate = in.strain_rate[i];
 	  const double eii     = second_invariant(strain_rate);
-	  const double eta_eff = K*std::pow(eii,n);
+	  const double eta_eff = k*std::pow(eii,n);
 
 	  
           out.viscosities[i] = ((composition_viscosity_prefactor != 1.0) && (in.composition[i].size()>0))
