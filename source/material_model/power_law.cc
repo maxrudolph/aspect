@@ -149,7 +149,7 @@ namespace aspect
                              Patterns::Double (0),
                              "The reference temperature $T_0$. The reference temperature is used "
                              "in both the density and viscosity formulas. Units: $K$.");
-          prm.declare_entry ("Consistency", "5e24",
+          prm.declare_entry ("Consistency index", "1.0e22",
                              Patterns::Double (0),
                              "The value of the constant consistency index $K$. This viscosity may be "
                              "modified by both temperature and compositional dependencies. Units: $(Pa) s^n$,"
