@@ -56,7 +56,7 @@ namespace aspect
                                pow(10.0, ((1-in.composition[i][0]) * log10(eta*temperature_dependence)
                                           + in.composition[i][0] * log10(eta*composition_viscosity_prefactor*temperature_dependence)))
                                :
-                               temperature_dependence * eta;
+                               temperature_dependence * eta_eff;
 
           const double c = (in.composition[i].size()>0)
                            ?
@@ -89,7 +89,7 @@ namespace aspect
     PowerLaw<dim>::
     reference_viscosity () const
     {
-      return eta;
+      return k;
     }
 
     template <int dim>
