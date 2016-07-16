@@ -48,9 +48,13 @@ namespace aspect
 	  SymmetricTensor<2,dim> strain_rate;
 	  if(in.strain_rate.size())
 	    strain_rate = in.strain_rate[i];
-	  const double eii     = second_invariant(strain_rate);
-	  const double eta_eff = k*std::pow(eii,n);
-
+	  const double eii     = std::sqrt(second_invariant(strain_rate));
+	  const double eta_eff = k*std::pow(eii,n-1);
+	  if( eta_eff < etamin ){
+	    eta_eff = etamin;
+	  }else if(eta_eff > etamax ){
+	    eta_eff = etamax;
+	  }
 	  
           out.viscosities[i] = ((composition_viscosity_prefactor != 1.0) && (in.composition[i].size()>0))
                                ?
@@ -160,6 +164,12 @@ namespace aspect
 			     Patterns::Double (0),
 			     "The value of the stress exponent appearing in the expression $\\dot{\\epsilon}=K."
 			     "The stress exponent is dimensionless and the default value is 3.0");
+	  prm.declare_entry ("Minimum viscosity", "1.0e19",
+			     Patterns::Double (0),
+			     "The minimum viscosity allowed during plastic deformation");
+	  prm.declare_entry ("Maximum viscosity", "1.0e25",
+			     Patterns::Double (0),
+			     "The maximum viscosity allowed during plastic deformation");
           prm.declare_entry ("Composition viscosity prefactor", "1.0",
                              Patterns::Double (0),
                              "A linear dependency of viscosity on the first compositional field. "
@@ -216,6 +226,8 @@ namespace aspect
           reference_T                = prm.get_double ("Reference temperature");
           k                          = prm.get_double ("Consistency index");
 	  n                          = prm.get_double ("Stress exponent");
+	  etamin                     = prm.get_double ("Minimum viscosity");
+	  etamax                     = prm.get_double ("Maximum viscosity");
           composition_viscosity_prefactor = prm.get_double ("Composition viscosity prefactor");
           thermal_viscosity_exponent = prm.get_double ("Thermal viscosity exponent");
           k_value                    = prm.get_double ("Thermal conductivity");

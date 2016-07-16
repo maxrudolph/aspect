@@ -107,6 +107,8 @@ namespace aspect
          */
 
       private:
+	double etamin;
+	double etamax;
         double reference_rho;
         double reference_T;
         double k;
