@@ -86,7 +86,7 @@ namespace aspect
 
     template <int dim>
     double
-    Simple<dim>::
+    PowerLaw<dim>::
     reference_viscosity () const
     {
       return eta;
@@ -94,7 +94,7 @@ namespace aspect
 
     template <int dim>
     double
-    Simple<dim>::
+    PowerLaw<dim>::
     reference_density () const
     {
       return reference_rho;
@@ -102,7 +102,7 @@ namespace aspect
 
     template <int dim>
     double
-    Simple<dim>::
+    PowerLaw<dim>::
     reference_thermal_expansion_coefficient () const
     {
       return thermal_alpha;
@@ -110,7 +110,7 @@ namespace aspect
 
     template <int dim>
     double
-    Simple<dim>::
+    PowerLaw<dim>::
     reference_cp () const
     {
       return reference_specific_heat;
@@ -118,7 +118,7 @@ namespace aspect
 
     template <int dim>
     double
-    Simple<dim>::
+    PowerLaw<dim>::
     reference_thermal_diffusivity () const
     {
       return k_value/(reference_rho*reference_specific_heat);
@@ -126,7 +126,7 @@ namespace aspect
 
     template <int dim>
     bool
-    Simple<dim>::
+    PowerLaw<dim>::
     is_compressible () const
     {
       return false;
@@ -136,7 +136,7 @@ namespace aspect
 
     template <int dim>
     void
-    Simple<dim>::declare_parameters (ParameterHandler &prm)
+    PowerLaw<dim>::declare_parameters (ParameterHandler &prm)
     {
       prm.enter_subsection("Material model");
       {
@@ -204,11 +204,11 @@ namespace aspect
 
     template <int dim>
     void
-    Simple<dim>::parse_parameters (ParameterHandler &prm)
+    PowerLaw<dim>::parse_parameters (ParameterHandler &prm)
     {
       prm.enter_subsection("Material model");
       {
-        prm.enter_subsection("Simple model");
+        prm.enter_subsection("Power-law model");
         {
           reference_rho              = prm.get_double ("Reference density");
           reference_T                = prm.get_double ("Reference temperature");
