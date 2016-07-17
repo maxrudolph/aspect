@@ -49,8 +49,9 @@ namespace aspect
 	  SymmetricTensor<2,dim> strain_rate;
 	  if(in.strain_rate.size())
 	    strain_rate = in.strain_rate[i];
-	  const double eii     = std::sqrt(second_invariant(strain_rate));
-	  double eta_eff = k*std::pow(eii,n-1);
+	  const double eii     = second_invariant(strain_rate);
+
+	  double eta_eff = k*std::sqrt(std::pow(eii,n-1));
 	  if( eta_eff < etamin ){
 	    eta_eff = etamin;
 	  }else if(eta_eff > etamax ){
