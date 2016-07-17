@@ -20,6 +20,7 @@
 
 
 #include <aspect/material_model/power_law.h>
+#include <aspect/utilities.h>
 
 using namespace dealii;
 
