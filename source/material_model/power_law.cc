@@ -49,8 +49,16 @@ namespace aspect
 	  SymmetricTensor<2,dim> strain_rate;
 	  if(in.strain_rate.size())
 	    strain_rate = in.strain_rate[i];
-	  const double eii     = second_invariant(strain_rate);
-	  const double sqeii   = std::sqrt(eii);
+	  // If first timestep, use the reference strain rate
+	  const double reference_strain_rate = 1.0e-13;
+	  const double strain_rate_dev_inv2 = ( (this->get_timestep_number() == 0 && strain_rate.norm() <= std::numeric_limits<double>::min())
+						?
+						reference_strain_rate * reference_strain_rate
+						:
+						std::fabs(second_invariant(deviator(strain_rate))));		
+	  
+	  //	  const double eii     = second_invariant(strain_rate);
+	  const double sqeii   = std::sqrt(strain_rate_dev_inv2);
 	  double eta_eff = k*std::pow(sqeii,n-1);
 	  if( eta_eff < etamin ){
 	    eta_eff = etamin;
