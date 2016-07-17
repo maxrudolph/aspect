@@ -50,8 +50,8 @@ namespace aspect
 	  if(in.strain_rate.size())
 	    strain_rate = in.strain_rate[i];
 	  const double eii     = second_invariant(strain_rate);
-
-	  double eta_eff = k*std::sqrt(std::pow(eii,n-1));
+	  const double sqeii   = std::sqrt(eii);
+	  double eta_eff = k*std::pow(sqeii,n-1);
 	  if( eta_eff < etamin ){
 	    eta_eff = etamin;
 	  }else if(eta_eff > etamax ){
