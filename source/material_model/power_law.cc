@@ -50,16 +50,15 @@ namespace aspect
 	  if(in.strain_rate.size())
 	    strain_rate = in.strain_rate[i];
 	  // If first timestep, use the reference strain rate
-	  const double reference_strain_rate = 1.0e-13;
+
 	  const double strain_rate_dev_inv2 = ( (this->get_timestep_number() == 0 && strain_rate.norm() <= std::numeric_limits<double>::min())
 						?
 						reference_strain_rate * reference_strain_rate
 						:
 						std::fabs(second_invariant(deviator(strain_rate))));		
 	  
-	  //	  const double eii     = second_invariant(strain_rate);
 	  const double sqeii   = std::sqrt(strain_rate_dev_inv2);
-	  double eta_eff = k*std::pow(sqeii,n-1.0);
+	  double eta_eff       = consistency * std::pow(sqeii,n-1.0);
 	  if( eta_eff < etamin ){
 	    eta_eff = etamin;
 	  }else if(eta_eff > etamax ){
@@ -105,7 +104,7 @@ namespace aspect
     PowerLaw<dim>::
     reference_viscosity () const
     {
-      return k;
+      return consistency * std::pow(reference_strain_rate,n-1.0);
     }
 
     template <int dim>
@@ -170,6 +169,9 @@ namespace aspect
                              "The value of the constant consistency index $K$. This viscosity may be "
                              "modified by both temperature and compositional dependencies. Units: $(Pa) s^n$,"
 			     "where $n$ is the Stress exponent.");
+	  prm.declare_entry ("Reference strain rate", "1.0e-14",
+                             Patterns::Double (0),
+			     "The reference strain rate used to return the reference viscosity.");
 	  prm.declare_entry ("Stress exponent", "3.0",
 			     Patterns::Double (0),
 			     "The value of the stress exponent appearing in the expression $\\dot{\\epsilon}=K."
@@ -234,7 +236,8 @@ namespace aspect
         {
           reference_rho              = prm.get_double ("Reference density");
           reference_T                = prm.get_double ("Reference temperature");
-          k                          = prm.get_double ("Consistency index");
+          consistency                 = prm.get_double ("Consistency index");
+	  reference_strain_rate      = prm.get_double  ("Reference strain rate");
 	  n                          = prm.get_double ("Stress exponent");
 	  etamin                     = prm.get_double ("Minimum viscosity");
 	  etamax                     = prm.get_double ("Maximum viscosity");

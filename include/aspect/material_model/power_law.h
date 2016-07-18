@@ -111,7 +111,8 @@ namespace aspect
 	double etamax;
         double reference_rho;
         double reference_T;
-        double k;
+        double consistency;
+	double reference_strain_rate;
 	double n;
         double composition_viscosity_prefactor;
         double thermal_viscosity_exponent;
