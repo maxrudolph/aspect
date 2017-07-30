@@ -110,7 +110,7 @@ namespace aspect
 	  if (coordinate_system == Utilities::Coordinates::depth)   
 	    {
 	      Point<1> dpoint(depth);
-	      const double viscosity_depth_prefactor = viscosity_function1d.value(point);
+	      const double viscosity_depth_prefactor = viscosity_function1d.value(dpoint);
 	      Assert (viscosity_depth_prefactor > 0.0, ExcMessage("Viscosity depth function should be larger than zero"));
 	      return viscosity_depth_prefactor/reference_viscosity;
 	    }
