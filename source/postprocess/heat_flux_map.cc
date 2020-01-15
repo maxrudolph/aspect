@@ -195,7 +195,7 @@ namespace aspect
 		  // The SUPG parameter tau does not have the physical dimensions of a diffusivity and as such should not be included in heat flux calculations
 		  const double diffusion_constant = (simulator_access.get_parameters().advection_stabilization_method == Parameters<dim>::AdvectionStabilizationMethod::supg) ?
 		    out.thermal_conductivities[q]
-		    ?
+		    :
 		    std::max(out.thermal_conductivities[q],
 			     artificial_viscosity_cell)
 		    ;
