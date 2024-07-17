@@ -224,6 +224,13 @@ namespace aspect
        * depth slices.
        */
       void
+      get_adiabatic_density_averages(std::vector<double> &values) const;
+
+      /**
+       * Fill the argument with a set of lateral averages of the current
+       * adiabatic density field.
+       */
+      void
       get_composition_averages(const unsigned int composition_index,
                                std::vector<double> &values) const;
 
