@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2020 - 2024 by the authors of the ASPECT code.
+  Copyright (C) 2020 - 2026 by the authors of the ASPECT code.
 
   This file is part of ASPECT.
 
@@ -77,20 +77,31 @@ namespace aspect
         private:
           /**
            * List of Frank-Kamenetskii viscosity ratios (E).
+           *
+           * This variable is read from the parameter file through a parameter called 'Viscosity ratios for Frank Kamenetskii'.
            */
           std::vector<double> viscosity_ratios_frank_kamenetskii;
 
           /**
            * List of Frank-Kamenetskii prefactors (A).
+           * This variable is read from the parameter file through a parameter called 'Prefactors for Frank Kamenetskii'.
            */
           std::vector<double> prefactors_frank_kamenetskii;
 
           /**
            * List of Frank-Kamenetskii pressure prefactors (F).
+           *
+           * This variable is read from the parameter file through a parameter called 'Pressure prefactors for Frank Kamenetskii'.
            */
           std::vector<double> pressure_prefactors_frank_kamenetskii;
 
+          /**
+           * This variable is read from the parameter file through a parameter called 'Reference temperatures for Frank Kamenetskii'.
+           */
           std::vector<double> reference_temperatures;
+          /**
+           * This variable is read from the parameter file through a parameter called 'Reference pressures for Frank Kamenetskii'.
+           */
           std::vector<double> reference_pressures;
       };
     }

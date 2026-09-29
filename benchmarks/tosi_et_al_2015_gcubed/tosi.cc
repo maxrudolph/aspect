@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2018 - 2024 by the authors of the ASPECT code.
+  Copyright (C) 2018 - 2026 by the authors of the ASPECT code.
 
   This file is part of ASPECT.
 
@@ -18,6 +18,7 @@
   <http://www.gnu.org/licenses/>.
  */
 
+#include <algorithm>
 #include <aspect/geometry_model/interface.h>
 #include <aspect/global.h>
 #include <aspect/geometry_model/box.h>
@@ -352,7 +353,7 @@ namespace aspect
         }
 
       // Cut-off the viscosity by user-defined values to avoid possible very large viscosity ratios
-      viscosity = std::max(std::min(viscosity,eta_maximum),eta_minimum);
+      viscosity = std::clamp(viscosity, eta_minimum, eta_maximum);
 
       return viscosity;
     }
@@ -704,7 +705,7 @@ namespace aspect
                                    "$\\rho(T)=\\rho_0(1-\\alpha(T-T_0))$. ")
     ASPECT_REGISTER_POSTPROCESSOR(TosiPostprocessor,
                                   "TosiPostprocessor",
-                                  "A postprocessor that computes the viscous dissipation"
+                                  "A postprocessor that computes the viscous dissipation "
                                   "for the whole domain as: "
                                   "$\\left<\\Phi\\right>=\\int_{V} \\tau : \\dot{\\epsilon}dV$ "
                                   "= $\\int_{V} 2\\mu\\dot{\\epsilon}:\\dot{\\epsilon} dV$. "

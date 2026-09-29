@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2011 - 2025 by the authors of the ASPECT code.
+  Copyright (C) 2011 - 2026 by the authors of the ASPECT code.
 
   This file is part of ASPECT.
 
@@ -113,13 +113,25 @@ namespace aspect
       void setup_dofs() override;
 
       /**
+       * Set up the triangulations used by the global coarsening hierarchy.
+       */
+      void setup_multigrid_hierarchy() override;
+
+      /**
+       * Return the triangulations used by the global coarsening hierarchy.
+       */
+      const std::vector<std::shared_ptr<const Triangulation<dim, dim>>> &
+      get_multigrid_triangulations() const override;
+
+      /**
        * Perform various tasks to update the linear system to solve
        * for. Note that we are not assembling a matrix (as this is a
        * matrix-free algorithm), but we are evaluating the material
        * model and storing the information necessary for a later call
-       * to solve().
+       * to solve(). The function can modify @p system_rhs to account
+       * for boundary conditions as is necessary for matrix-free methods.
        */
-      void assemble() override;
+      void assemble(LinearAlgebra::BlockVector &system_rhs) override;
 
       /**
        * Computes and sets the diagonal for both the mass matrix operator and the A-block
@@ -171,11 +183,11 @@ namespace aspect
        * Add correction to system RHS for non-zero boundary condition. See description in
        * StokesMatrixFreeHandler::correct_stokes_rhs() for more information.
        */
-      void correct_stokes_rhs();
+      void correct_stokes_rhs(LinearAlgebra::BlockVector &system_rhs);
 
-
-      Simulator<dim> &sim;
-
+      /**
+       * Print detailed debug information about the GMG solver.
+       */
       bool print_details;
 
       /**
@@ -230,6 +242,24 @@ namespace aspect
 
       std::vector<std::shared_ptr<const Triangulation<dim, dim>>> trias;
 
+      /**
+       * Return a mapping that is valid on the (repartitioned copies of the)
+       * level triangulations of the global coarsening hierarchy. The
+       * simulator mapping can be a MappingQCache, which caches geometry
+       * information for the cells of the simulator triangulation only and
+       * must not be evaluated on other triangulations. In that case an
+       * equivalent manifold-based mapping is built (and stored in
+       * #level_triangulation_mapping); otherwise the simulator mapping is
+       * returned.
+       */
+      const Mapping<dim> &get_level_triangulation_mapping();
+
+      /**
+       * Storage for the mapping returned by
+       * get_level_triangulation_mapping().
+       */
+      std::unique_ptr<Mapping<dim>> level_triangulation_mapping;
+
       MGLevelObject<DoFHandler<dim>> dofhandlers_v;
       MGLevelObject<DoFHandler<dim>> dofhandlers_p;
       MGLevelObject<DoFHandler<dim>> dofhandlers_projection;
@@ -237,15 +267,10 @@ namespace aspect
       MGLevelObject<AffineConstraints<double>> constraints_v;
       MGLevelObject<AffineConstraints<double>> constraints_p;
 
-#if DEAL_II_VERSION_GTE(9,6,0)
-      using transfer_t = MGTransferMF<dim, GMGNumberType>;
-#else
-      using transfer_t = MGTransferGlobalCoarsening<dim, dealii::LinearAlgebra::distributed::Vector<GMGNumberType>>;
-#endif
       MGLevelObject<MGTwoLevelTransfer<dim, dealii::LinearAlgebra::distributed::Vector<GMGNumberType>>> transfers_v;
       MGLevelObject<MGTwoLevelTransfer<dim, dealii::LinearAlgebra::distributed::Vector<GMGNumberType>>> transfers_p;
-      std::unique_ptr<transfer_t> mg_transfer_A_block;
-      std::unique_ptr<transfer_t> mg_transfer_Schur_complement;
+      std::unique_ptr<GCMGTransferType<dim,GMGNumberType>> mg_transfer_A_block;
+      std::unique_ptr<GCMGTransferType<dim,GMGNumberType>> mg_transfer_Schur_complement;
   };
 }
 

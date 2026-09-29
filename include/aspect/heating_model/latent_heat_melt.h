@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2015 - 2022 by the authors of the ASPECT code.
+  Copyright (C) 2015 - 2026 by the authors of the ASPECT code.
 
   This file is part of ASPECT.
 
@@ -85,8 +85,16 @@ namespace aspect
         create_additional_material_model_outputs(MaterialModel::MaterialModelOutputs<dim> &outputs) const override;
 
       private:
-        // entropy change upon melting
+        /**
+         * Entropy change upon melting.
+         *
+         * This variable is read from the parameter file through a parameter called 'Melting entropy change'.
+         */
         double melting_entropy_change;
+
+        /**
+         * This variable is read from the parameter file through a parameter called 'Retrieve entropy change from material model'.
+         */
         bool   retrieve_entropy_change_from_material_model;
     };
   }

@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2018 - 2024 by the authors of the ASPECT code.
+  Copyright (C) 2018 - 2026 by the authors of the ASPECT code.
 
   This file is part of ASPECT.
 
@@ -19,9 +19,12 @@
 */
 
 
-#include <aspect/simulator.h>
 #include <aspect/time_stepping/convection_time_step.h>
+
+#include <aspect/gravity_model/interface.h>
+
 #include <aspect/melt.h>
+#include <aspect/utilities.h>
 
 namespace aspect
 {
@@ -66,7 +69,7 @@ namespace aspect
       MaterialModel::MaterialModelInputs<dim> in(fe_values.n_quadrature_points, this->n_compositional_fields());
       MaterialModel::MaterialModelOutputs<dim> out(fe_values.n_quadrature_points, this->n_compositional_fields());
       MeltHandler<dim>::create_material_model_outputs(out);
-      std::shared_ptr<MaterialModel::MeltOutputs<dim>> fluid_out;
+      std::shared_ptr<const MaterialModel::MeltOutputs<dim>> fluid_out;
 
       double max_local_speed_over_meshsize = 0;
 
@@ -90,14 +93,11 @@ namespace aspect
                 if (consider_darcy_timestep)
                   {
                     const Tensor<1,dim> gravity = this->get_gravity_model().gravity_vector(fe_values.quadrature_point(q));
-                    const double porosity = std::max(in.composition[q][porosity_idx], 1e-10);
-                    const double solid_density = out.densities[q];
-                    const double fluid_density = fluid_out->fluid_densities[q];
-                    const double fluid_viscosity = fluid_out->fluid_viscosities[q];
-                    const double permeability = fluid_out->permeabilities[q];
-                    const Tensor<1, dim> fluid_velocity = velocity_values[q] -
-                                                          (permeability / fluid_viscosity / porosity) *
-                                                          gravity * (solid_density - fluid_density);
+                    Tensor<1,dim> fluid_velocity =
+                      aspect::Utilities::calculate_approximate_darcy_velocity(in, out, fluid_out, velocity_values[q],
+                                                                              gravity, porosity_idx, q,
+                                                                              this->get_parameters().use_pressure_gradient_for_darcy_field);
+
                     max_local_velocity = std::max(max_local_velocity, fluid_velocity.norm());
                   }
                 max_local_velocity = std::max (max_local_velocity,

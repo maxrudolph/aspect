@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2011 - 2024 by the authors of the ASPECT code.
+  Copyright (C) 2011 - 2026 by the authors of the ASPECT code.
 
   This file is part of ASPECT.
 
@@ -27,6 +27,7 @@
 #include <aspect/advection_field.h>
 #include <aspect/volume_of_fluid/handler.h>
 #include <aspect/newton.h>
+#include <aspect/simulator/solver/stokes_matrix_based.h>
 #include <aspect/simulator/solver/stokes_matrix_free.h>
 #include <aspect/simulator/solver/stokes_direct.h>
 #include <aspect/mesh_deformation/interface.h>
@@ -73,6 +74,7 @@
 #include <iostream>
 #include <locale>
 #include <string>
+#include <vector>
 
 
 
@@ -211,6 +213,8 @@ namespace aspect
                      TimerOutput::wall_times),
     total_walltime_until_last_snapshot(0.),
     last_checkpoint_id (numbers::invalid_unsigned_int),
+    last_regular_checkpoint_id (numbers::invalid_unsigned_int),
+    last_additional_checkpoint_id (parameters.n_checkpoints_to_keep),
     initial_topography_model(InitialTopographyModel::create_initial_topography_model<dim>(prm)),
     geometry_model (GeometryModel::create_geometry_model<dim>(prm)),
     // make sure the parameters object gets a chance to
@@ -247,7 +251,7 @@ namespace aspect
     dof_handler (triangulation),
 
     last_pressure_normalization_adjustment (numbers::signaling_nan<double>()),
-    pressure_scaling (numbers::signaling_nan<double>()),
+    pressure_scaling (std::numeric_limits<double>::quiet_NaN()),
 
     rebuild_stokes_matrix (true),
     assemble_newton_stokes_matrix (true),
@@ -338,6 +342,8 @@ namespace aspect
 
     heating_model_manager.initialize_simulator(*this);
     heating_model_manager.parse_parameters (prm);
+    prescribed_dilation_manager.initialize_simulator(*this);
+    prescribed_dilation_manager.parse_parameters (prm);
 
     if (SimulatorAccess<dim> *sim = dynamic_cast<SimulatorAccess<dim>*>(gravity_model.get()))
       sim->initialize_simulator (*this);
@@ -455,21 +461,15 @@ namespace aspect
     select_default_solver_and_averaging();
 
     if (parameters.stokes_solver_type == Parameters<dim>::StokesSolverType::block_gmg)
-      {
-        stokes_matrix_free = create_matrix_free_solver<dim>(*this, parameters);
+      stokes_solver = create_matrix_free_solver<dim>(*this, parameters);
+    else if (parameters.stokes_solver_type == Parameters<dim>::StokesSolverType::direct_solver)
+      stokes_solver = std::make_unique<StokesSolver::Direct<dim>>();
+    else
+      stokes_solver = std::make_unique<StokesSolver::MatrixBased<dim>>(*this);
 
-        stokes_matrix_free->initialize_simulator(*this);
-        stokes_matrix_free->parse_parameters(prm);
-        stokes_matrix_free->initialize();
-      }
-
-    if (parameters.stokes_solver_type == Parameters<dim>::StokesSolverType::direct_solver)
-      {
-        stokes_direct = std::make_unique<StokesSolver::Direct<dim>>();
-        stokes_direct->initialize_simulator(*this);
-        stokes_direct->parse_parameters(prm);
-        stokes_direct->initialize();
-      }
+    stokes_solver->initialize_simulator(*this);
+    stokes_solver->parse_parameters(prm);
+    stokes_solver->initialize();
 
     postprocess_manager.initialize_simulator (*this);
     postprocess_manager.parse_parameters (prm);
@@ -484,20 +484,25 @@ namespace aspect
 
     if (particles_are_needed)
       {
-        particle_managers.resize(parameters.n_particle_managers);
-
-        AssertThrow(particle_managers.size() <= ASPECT_MAX_NUM_PARTICLE_SYSTEMS,
-                    ExcMessage("You have selected " + std::to_string(particle_managers.size()) + " particle managers, but ASPECT "
+        AssertThrow(parameters.n_particle_managers <= ASPECT_MAX_NUM_PARTICLE_SYSTEMS,
+                    ExcMessage("You have selected " + std::to_string(parameters.n_particle_managers) + " particle managers, but ASPECT "
                                "has been compiled with a maximum of " + std::to_string(ASPECT_MAX_NUM_PARTICLE_SYSTEMS) + ". "
                                "Please recompile ASPECT with a higher value for ASPECT_MAX_NUM_PARTICLE_SYSTEMS. You can set a higher number "
                                "specifying the CMake variable -DASPECT_MAX_NUM_PARTICLE_SYSTEMS=<number>"));
 
-        for (unsigned int particle_manager_index = 0 ; particle_manager_index < particle_managers.size(); ++particle_manager_index)
+        // Create the particle managers:
+        for (unsigned int particle_manager_index = 0; particle_manager_index < parameters.n_particle_managers; ++particle_manager_index)
+          {
+            particle_managers.emplace_back(Particle::Manager<dim>(particle_manager_index));
+          }
+
+        // And then initialize them:
+        for (unsigned int particle_manager_index = 0; particle_manager_index < particle_managers.size(); ++particle_manager_index)
           {
             if (SimulatorAccess<dim> *sim = dynamic_cast<SimulatorAccess<dim>*>(&particle_managers[particle_manager_index]))
               sim->initialize_simulator (*this);
 
-            particle_managers[particle_manager_index].parse_parameters(prm,particle_manager_index);
+            particle_managers[particle_manager_index].parse_parameters(prm);
             particle_managers[particle_manager_index].initialize();
           }
       }
@@ -563,7 +568,7 @@ namespace aspect
     do_pressure_rhs_compatibility_modification = ((material_model->is_compressible() && !parameters.include_melt_transport)
                                                   ||
                                                   (parameters.include_melt_transport && !material_model->is_compressible())
-                                                  || parameters.enable_prescribed_dilation)
+                                                  || parameters.enable_prescribed_dilation || prescribed_dilation_manager.get_active_plugin_names().size() > 0)
                                                  &&
                                                  (open_velocity_boundary_indicators.size() == 0);
 
@@ -684,6 +689,7 @@ namespace aspect
     geometry_model->update();
     material_model->update();
     gravity_model->update();
+    prescribed_dilation_manager.update();
     heating_model_manager.update();
     adiabatic_conditions->update();
     mesh_refinement_manager.update();
@@ -713,9 +719,7 @@ namespace aspect
     // We put the constraints we compute into a separate AffineConstraints<double> so we can check
     // if the set of constraints has changed. If it did, we need to update the sparsity patterns.
     AffineConstraints<double> new_current_constraints(
-#if DEAL_II_VERSION_GTE(9,6,0)
       dof_handler.locally_owned_dofs(),
-#endif
       introspection.index_sets.system_relevant_set
     );
     new_current_constraints.merge (constraints);
@@ -859,12 +863,7 @@ namespace aspect
     if (any_constrained_dofs_set_changed)
       rebuild_sparsity_and_matrices = true;
 
-#if DEAL_II_VERSION_GTE(9,6,0)
     current_constraints = std::move(new_current_constraints);
-#else
-    current_constraints.reinit (introspection.index_sets.system_relevant_set);
-    current_constraints.copy_from(new_current_constraints);
-#endif
     current_constraints.close();
 
     // TODO: We should use current_constraints.is_consistent_in_parallel()
@@ -1000,10 +999,10 @@ namespace aspect
     if (solver_scheme_solves_stokes_equations(parameters))
       {
         // The matrix-free solver does not work with melt transport
-        Assert(!(parameters.include_melt_transport && stokes_matrix_free),
+        Assert(!(parameters.include_melt_transport && is_stokes_matrix_free()),
                ExcNotImplemented());
 
-        if (stokes_matrix_free)
+        if (is_stokes_matrix_free())
           {
             // nothing couples in the matrix free solver
           }
@@ -1539,6 +1538,11 @@ namespace aspect
       pcout.get_stream().imbue(s);
     }
 
+    // Set up the multigrid hierarchy before the mesh deformation DoFs, so that
+    // the mesh deformation handler can use the global coarsening triangulations.
+    if (is_stokes_matrix_free())
+      dynamic_cast<StokesMatrixFreeHandler<dim>*>(stokes_solver.get())->setup_multigrid_hierarchy();
+
     // We need to set up the mesh deformation degrees of freedom first if mesh deformation
     // is active, since the mapping must be in place before applying boundary
     // conditions that rely on it (such as no flux BCs).
@@ -1547,23 +1551,13 @@ namespace aspect
 
 
     // Reconstruct the constraint-matrix:
-#if DEAL_II_VERSION_GTE(9,6,0)
     constraints.reinit (dof_handler.locally_owned_dofs(), introspection.index_sets.system_relevant_set);
-#else
-    constraints.reinit(introspection.index_sets.system_relevant_set);
-#endif
 
-    // Set up the constraints for periodic boundary conditions:
-
-    // Note: this has to happen _before_ we do hanging node constraints,
-    // because inconsistent constraints could be generated in parallel otherwise.
-    geometry_model->make_periodicity_constraints(dof_handler,
-                                                 constraints);
-
-    //  Make hanging node constraints:
+    //  Make hanging node constraints (for adaptivity) and then periodic constraints:
     DoFTools::make_hanging_node_constraints (dof_handler,
                                              constraints);
-
+    geometry_model->make_periodicity_constraints(dof_handler,
+                                                 constraints);
 
     compute_initial_velocity_boundary_constraints(constraints);
     constraints.close();
@@ -1589,8 +1583,8 @@ namespace aspect
     rebuild_stokes_preconditioner = true;
 
     // Setup matrix-free dofs
-    if (stokes_matrix_free)
-      stokes_matrix_free->setup_dofs();
+    if (is_stokes_matrix_free())
+      dynamic_cast<StokesMatrixFreeHandler<dim>*>(stokes_solver.get())->setup_dofs();
 
     computing_timer.leave_subsection("Setup dof systems");
   }
@@ -1603,6 +1597,10 @@ namespace aspect
   void
   Simulator<dim>::setup_introspection ()
   {
+    introspection.initialize_stokes_dof_info(finite_element);
+    if (parameters.include_melt_transport)
+      melt_handler->initialize_stokes_dof_info(introspection, finite_element);
+
     // compute the various partitionings between processors and blocks
     // of vectors and matrices
     introspection.system_dofs_per_block = DoFTools::count_dofs_per_fe_block (dof_handler,
@@ -1677,21 +1675,56 @@ namespace aspect
     // whatever the postprocessors have generated
     if (Utilities::MPI::this_mpi_process(mpi_communicator)==0)
       {
-        // determine the width of the first column of text so that
-        // everything gets nicely aligned; then output everything
+        // Determine the width of the first column of text so that everything
+        // gets nicely aligned. A postprocessor may return multiple output
+        // rows by separating them with newline characters.
         {
+          const auto split_output_lines = [] (const std::string &output)
+          {
+            std::vector<std::string> lines;
+            std::size_t line_start = 0;
+            std::size_t line_end;
+
+            while ((line_end = output.find('\n', line_start)) != std::string::npos)
+              {
+                lines.emplace_back(output.substr(line_start, line_end - line_start));
+                line_start = line_end + 1;
+              }
+
+            if (line_start < output.size())
+              lines.emplace_back(output.substr(line_start));
+
+            return lines;
+          };
+
           unsigned int width = 0;
           for (const auto &p : output_list)
-            width = std::max<unsigned int> (width, p.first.size());
+            for (const auto &line : split_output_lines(p.first))
+              width = std::max<unsigned int> (width, line.size());
 
           for (const auto &p : output_list)
-            pcout << "     "
-                  << std::left
-                  << std::setw(width)
-                  << p.first
-                  << ' '
-                  << p.second
-                  << std::endl;
+            {
+              const std::vector<std::string> first_column_lines = split_output_lines(p.first);
+              const std::vector<std::string> second_column_lines = split_output_lines(p.second);
+              const unsigned int n_lines = std::max(first_column_lines.size(),
+                                                    second_column_lines.size());
+
+              for (unsigned int line = 0; line < n_lines; ++line)
+                {
+                  pcout << "     ";
+
+                  if (p.first.empty() == false)
+                    pcout << std::left
+                          << std::setw(width)
+                          << (line < first_column_lines.size() ? first_column_lines[line] : "")
+                          << ' ';
+
+                  if (line < second_column_lines.size())
+                    pcout << second_column_lines[line];
+
+                  pcout << std::endl;
+                }
+            }
         }
 
         pcout << std::endl;
@@ -1824,7 +1857,7 @@ namespace aspect
       const bool mesh_changed = Utilities::MPI::max(any_flags_set?1:0,mpi_communicator) == 1 ? true : false;
       if (!mesh_changed)
         {
-          pcout << "Skipping mesh refinement, because the mesh did not change.\n" << std::endl;
+          pcout << "Skipping mesh refinement, because no cells were flagged for refinement/coarsening.\n" << std::endl;
           computing_timer.leave_subsection("Refine mesh structure, part 1");
           return;
         }
@@ -1961,8 +1994,8 @@ namespace aspect
         compute_current_constraints ();
 
         // GMG boundary conditions are currently handled as part of setup_dofs()
-        if (stokes_matrix_free)
-          stokes_matrix_free->setup_dofs();
+        if (is_stokes_matrix_free())
+          dynamic_cast<StokesMatrixFreeHandler<dim>*>(stokes_solver.get())->setup_dofs();
 
         // if compute_current_constraints() changed which DoFs are constrained,
         // we need to rebuild the system matrices
@@ -1987,6 +2020,8 @@ namespace aspect
 
     try
       {
+        signals.pre_nonlinear_solver(*this);
+
         switch (parameters.nonlinear_solver)
           {
             case NonlinearSolver::no_Advection_no_Stokes:
@@ -2162,11 +2197,21 @@ namespace aspect
             parameters.additional_refinement_times
             .erase (parameters.additional_refinement_times.begin());
           }
+
+        // we need to remove additional_checkpoint_times that are in the past
+        while ((parameters.additional_checkpoint_times.size() > 0)
+               &&
+               (parameters.additional_checkpoint_times.front () < time+time_step))
+          {
+            parameters.additional_checkpoint_times
+            .erase (parameters.additional_checkpoint_times.begin());
+          }
       }
     else
       {
         // This will cause the next checkpoint to be written to be 01:
         last_checkpoint_id = 0;
+        last_regular_checkpoint_id = 0;
 
         time = parameters.start_time;
 
@@ -2355,7 +2400,7 @@ namespace aspect
     // Provide output about the resources used during the computation, but only
     // if the model run is longer than our test cases. This ensures the
     // additional empty lines do not confuse our test system.
-    if (resource_usage > 0.2)
+    if (resource_usage > 1.0)
       resource_output << "\n-- Approximate resource usage including restarts:             "
                       << resource_usage
                       << " core hours"
@@ -2378,8 +2423,6 @@ namespace aspect
     pcout << resource_output.str();
 
     CitationInfo::print_info_block (pcout);
-
-    stokes_matrix_free.reset();
   }
 }
 

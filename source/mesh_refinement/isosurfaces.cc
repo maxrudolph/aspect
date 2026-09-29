@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2011 - 2023 by the authors of the ASPECT code.
+  Copyright (C) 2011 - 2026 by the authors of the ASPECT code.
 
   This file is part of ASPECT.
 
@@ -17,8 +17,6 @@
   along with ASPECT; see the file LICENSE.  If not see
   <http://www.gnu.org/licenses/>.
 */
-
-
 
 #include <algorithm>
 #include <aspect/geometry_model/interface.h>
@@ -117,7 +115,7 @@ namespace aspect
                 std::vector<std::string> tmpNumber = Utilities::split_string_list(string,'+');
                 AssertThrow(tmpNumber.size() == 2,
                             ExcMessage("Could not convert value '" + string + "' to an int because it contains more than one '+' sign."));
-                return std::min(std::max(minimum_refinement_level+Utilities::string_to_int(tmpNumber[1]),minimum_refinement_level),maximum_refinement_level);
+                return std::clamp(minimum_refinement_level + Utilities::string_to_int(tmpNumber[1]), minimum_refinement_level, maximum_refinement_level);
               }
             else
               {
@@ -133,7 +131,7 @@ namespace aspect
                 std::vector<std::string> tmpNumber = Utilities::split_string_list(string,'-');
                 AssertThrow(tmpNumber.size() == 2,
                             ExcMessage("Could not convert value '" + string + "' to an int because it contains more than one '-' sign."));
-                return std::min(std::max(static_cast<int>(maximum_refinement_level)-Utilities::string_to_int(tmpNumber[1]),static_cast<int>(minimum_refinement_level)),static_cast<int>(maximum_refinement_level));
+                return std::clamp(static_cast<int>(maximum_refinement_level) - Utilities::string_to_int(tmpNumber[1]), static_cast<int>(minimum_refinement_level), static_cast<int>(maximum_refinement_level));
               }
             else
               {
@@ -144,7 +142,7 @@ namespace aspect
           }
         else
           {
-            return std::min(std::max(static_cast<unsigned int>(Utilities::string_to_int(string)),minimum_refinement_level),maximum_refinement_level);
+            return std::clamp(static_cast<unsigned int>(Utilities::string_to_int(string)), minimum_refinement_level, maximum_refinement_level);
           }
 
       }

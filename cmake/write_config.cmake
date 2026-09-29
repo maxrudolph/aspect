@@ -1,4 +1,4 @@
-# Copyright (C) 2013 - 2024 by the authors of the ASPECT code.
+# Copyright (C) 2013 - 2026 by the authors of the ASPECT code.
 #
 # This file is part of ASPECT.
 #
@@ -39,6 +39,7 @@ _detailed(
 #        ASPECT_USE_SHARED_LIBS:    ${ASPECT_USE_SHARED_LIBS}
 #        ASPECT_HAVE_LINK_H:        ${ASPECT_HAVE_LINK_H}
 #        ASPECT_WITH_FASTSCAPE:     ${ASPECT_WITH_FASTSCAPE}
+#        ASPECT_WITH_LANDLAB:       ${ASPECT_WITH_LANDLAB}
 #        ASPECT_WITH_LIBDAP:        ${ASPECT_WITH_LIBDAP}
 #        ASPECT_WITH_NETCDF:        ${ASPECT_WITH_NETCDF}
 #        ASPECT_WITH_PERPLEX:       ${ASPECT_WITH_PERPLEX}

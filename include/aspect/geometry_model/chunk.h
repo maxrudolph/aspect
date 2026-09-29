@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2011 - 2024 by the authors of the ASPECT code.
+  Copyright (C) 2011 - 2026 by the authors of the ASPECT code.
 
   This file is part of ASPECT.
 
@@ -380,19 +380,25 @@ namespace aspect
 
       private:
         /**
-         * Minimum longitude-depth or
-         * longitude-latitude-depth point
+         * Minimum longitude-depth or longitude-latitude-depth point.
+         *
+         * This variable is read from the parameter file through parameters called
+         * 'Chunk inner radius', 'Chunk minimum longitude', and 'Chunk minimum latitude'.
          */
         Point<dim> point1;
 
         /**
-         * Maximum longitude-depth or
-         * longitude-latitude-depth point
+         * Maximum longitude-depth or longitude-latitude-depth point
+         * This variable is read from the parameter file through parameters called
+         * 'Chunk outer radius', 'Chunk maximum longitude', and 'Chunk maximum latitude'.
          */
         Point<dim> point2;
 
         /**
          * The number of cells in each coordinate direction
+         *
+         * This variable is read from the parameter file through parameters called
+         * 'Radius repetitions', 'Longitude repetitions', and 'Latitude repetitions'.
          */
         std::array<unsigned int, dim> repetitions;
 

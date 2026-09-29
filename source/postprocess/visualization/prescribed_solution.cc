@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2015 - 2023 by the authors of the ASPECT code.
+  Copyright (C) 2015 - 2026 by the authors of the ASPECT code.
 
   This file is part of ASPECT.
 
@@ -56,13 +56,13 @@ namespace aspect
           {
             if (component_index == this->introspection().component_indices.temperature)
               {
-                solution_names.push_back("prescribed_temperature_indicator");
-                solution_names.push_back("prescribed_temperature_value");
+                solution_names.emplace_back("prescribed_temperature_indicator");
+                solution_names.emplace_back("prescribed_temperature_value");
               }
             else if (component_index == this->introspection().component_indices.pressure)
               {
-                solution_names.push_back("prescribed_pressure_indicator");
-                solution_names.push_back("prescribed_pressure_value");
+                solution_names.emplace_back("prescribed_pressure_indicator");
+                solution_names.emplace_back("prescribed_pressure_value");
               }
             else if ((component_index >= this->introspection().component_indices.velocities[0]) &&
                      (component_index <= this->introspection().component_indices.velocities[dim-1]))

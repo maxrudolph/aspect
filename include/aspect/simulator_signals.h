@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2015 - 2024 by the authors of the ASPECT code.
+  Copyright (C) 2015 - 2026 by the authors of the ASPECT code.
 
   This file is part of ASPECT.
 
@@ -304,6 +304,13 @@ namespace aspect
      * object.
      */
     boost::signals2::signal<void (const SimulatorAccess<dim> &)> post_mesh_deformation;
+
+    /**
+     * A signal that is triggered just before the main solver loop of a time step
+     * begins. The arguments to this signal is a reference to the SimulatorAccess
+     * object.
+     */
+    boost::signals2::signal<void (const SimulatorAccess<dim> &)> pre_nonlinear_solver;
 
     /**
      * A signal that is triggered at the end of the set_assemblers() function that

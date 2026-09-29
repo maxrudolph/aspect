@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2025 by the authors of the ASPECT code.
+  Copyright (C) 2025 - 2026 by the authors of the ASPECT code.
 
   This file is part of ASPECT.
 
@@ -18,10 +18,13 @@
   <http://www.gnu.org/licenses/>.
 */
 
-#include <aspect/simulator.h>
-#include <aspect/utilities.h>
 
+#include <aspect/utilities.h>
+#include <aspect/simulator_signals.h>
+
+#include <cstdlib>
 #include <iostream>
+#include <string>
 
 #define ASPECT_NUMPY_DEFINE_API
 #include <aspect/python_helper.h>
@@ -67,7 +70,7 @@ void signal_connector (aspect::SimulatorSignals<dim> &/*signals*/)
 {
   f();
   std::cout << "exiting..." << std::endl;
-  std::exit(0); // let's exist and not actually run ASPECT...
+  std::exit(0); // let's exit and not actually run ASPECT...
 }
 
 ASPECT_REGISTER_SIGNALS_CONNECTOR(signal_connector<2>,

@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2014 - 2019 by the authors of the ASPECT code.
+  Copyright (C) 2014 - 2026 by the authors of the ASPECT code.
 
   This file is part of ASPECT.
 
@@ -104,13 +104,22 @@ namespace aspect
 
         /**
          * Temperatures at the inner and outer boundaries.
+         *
+         * This variable is read from the parameter file through a parameter called 'Minimal temperature'.
          */
         double min_temperature;
+
+        /**
+         * Temperatures at the inner and outer boundaries.
+         * This variable is read from the parameter file through a parameter called 'Maximal temperature'.
+         */
         double max_temperature;
 
         /**
          * The coordinate representation to evaluate the function. Possible
          * choices are depth, cartesian and spherical.
+         *
+         * This variable is read from the parameter file through a parameter called 'Coordinate system'.
          */
         Utilities::Coordinates::CoordinateSystem coordinate_system;
     };

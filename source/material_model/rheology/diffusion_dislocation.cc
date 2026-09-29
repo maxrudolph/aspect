@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2020 - 2024 by the authors of the ASPECT code.
+  Copyright (C) 2020 - 2026 by the authors of the ASPECT code.
 
   This file is part of ASPECT.
 
@@ -18,7 +18,7 @@
   <http://www.gnu.org/licenses/>.
 */
 
-
+#include <algorithm>
 #include <aspect/material_model/rheology/diffusion_dislocation.h>
 #include <aspect/material_model/utilities.h>
 #include <aspect/utilities.h>
@@ -141,18 +141,18 @@ namespace aspect
                         const double diffusion_T_and_P_dependence = std::exp(std::max(diffusion_creep_parameters.activation_energy + pressure*diffusion_creep_parameters.activation_volume,0.0)/
                                                                              (constants::gas_constant*temperature));
 
-                        const double diffusion_viscosity = std::min(std::max(diffusion_prefactor * diffusion_grain_size_dependence
-                                                                             * diffusion_strain_rate_dependence * diffusion_T_and_P_dependence,
-                                                                             minimum_viscosity), maximum_viscosity);
+                        const double diffusion_viscosity = std::clamp(diffusion_prefactor * diffusion_grain_size_dependence
+                                                                      * diffusion_strain_rate_dependence * diffusion_T_and_P_dependence,
+                                                                      minimum_viscosity, maximum_viscosity);
 
                         const double dislocation_prefactor = 0.5 * std::pow(dislocation_creep_parameters.prefactor,-1.0/dislocation_creep_parameters.stress_exponent);
                         const double dislocation_strain_rate_dependence = std::pow(dislocation_strain_rate, (1.-dislocation_creep_parameters.stress_exponent)/dislocation_creep_parameters.stress_exponent);
                         const double dislocation_T_and_P_dependence = std::exp(std::max(dislocation_creep_parameters.activation_energy + pressure*dislocation_creep_parameters.activation_volume,0.0)/
                                                                                (dislocation_creep_parameters.stress_exponent*constants::gas_constant*temperature));
 
-                        const double dislocation_viscosity = std::min(std::max(dislocation_prefactor * dislocation_strain_rate_dependence
-                                                                               * dislocation_T_and_P_dependence,
-                                                                               minimum_viscosity), maximum_viscosity);
+                        const double dislocation_viscosity = std::clamp(dislocation_prefactor * dislocation_strain_rate_dependence
+                                                                        * dislocation_T_and_P_dependence,
+                                                                        minimum_viscosity, maximum_viscosity);
 
                         diffusion_strain_rate = dislocation_viscosity / (diffusion_viscosity + dislocation_viscosity) * edot_ii;
                         dislocation_strain_rate = diffusion_viscosity / (diffusion_viscosity + dislocation_viscosity) * edot_ii;
@@ -176,7 +176,7 @@ namespace aspect
               }
 
             // The effective viscosity, with minimum and maximum bounds
-            composition_viscosities[j] = std::min(std::max(stress_ii/edot_ii/2, minimum_viscosity), maximum_viscosity);
+            composition_viscosities[j] = std::clamp(stress_ii / edot_ii / 2, minimum_viscosity, maximum_viscosity);
           }
         return composition_viscosities;
       }
@@ -209,13 +209,13 @@ namespace aspect
       {
         // Reference and minimum/maximum values
         prm.declare_entry ("Reference temperature", "293.", Patterns::Double(0.),
-                           "For calculating density by thermal expansivity. Units: $\\text{K}$.");
+                           "For calculating density by thermal expansivity. Units: \\si{\\kelvin}.");
         prm.declare_entry ("Minimum strain rate", "1.4e-20", Patterns::Double(0.),
                            "Stabilizes strain dependent viscosity. Units: \\si{\\per\\second}.");
         prm.declare_entry ("Minimum viscosity", "1e17", Patterns::Double(0.),
-                           "Lower cutoff for effective viscosity. Units: $\\text{Pa}\\text{s}$.");
+                           "Lower cutoff for effective viscosity. Units: \\si{\\pascal\\second}.");
         prm.declare_entry ("Maximum viscosity", "1e28", Patterns::Double(0.),
-                           "Upper cutoff for effective viscosity. Units: $\\text{Pa}\\text{s}$.");
+                           "Upper cutoff for effective viscosity. Units: \\si{\\pascal\\second}.");
         prm.declare_entry ("Effective viscosity coefficient", "1.0", Patterns::Double(0.),
                            "Scaling coefficient for effective viscosity.");
 
@@ -237,20 +237,21 @@ namespace aspect
         prm.declare_entry ("Heat capacity", "1.25e3",
                            Patterns::Double(0.),
                            "The value of the specific heat $C_p$. "
-                           "Units: $\\frac{\\text{J}}{\\text{K}\\text{kg}}$.");
+                           "Units: \\si{\\joule\\per\\kelvin\\per\\kilogram}.");
         prm.declare_entry ("Densities", "3300.",
                            Patterns::List(Patterns::Double(0.)),
                            "List of densities, $\\rho$, for background mantle and compositional fields, "
                            "for a total of N+1 values, where N is the number of all compositional fields or only "
                            "those corresponding to chemical compositions. "
                            "If only one value is given, then all use the same value. "
-                           "Units: $\\frac{\\text{kg}}{\\text{m}^3}$.");
+                           "Units: \\si{\\kg\\per\\m^3}.");
         prm.declare_entry ("Thermal expansivities", "3.5e-5",
                            Patterns::List(Patterns::Double(0.)),
                            "List of thermal expansivities for background mantle and compositional fields, "
                            "for a total of N+1 values, where N is the number of all compositional fields or only "
                            "those corresponding to chemical compositions. "
-                           "If only one value is given, then all use the same value.  Units: $\\frac{1}{\\text{K}}$.");
+                           "If only one value is given, then all use the same value. "
+                           "Units: \\si{\\per\\kelvin}.");
 
         // Rheological parameters
         prm.declare_entry ("Viscosity averaging scheme", "harmonic",
@@ -266,7 +267,7 @@ namespace aspect
                            "for a total of N+1 values, where N is the number of all compositional fields or only "
                            "those corresponding to chemical compositions. "
                            "If only one value is given, then all use the same value. "
-                           "Units: $\\frac{1}{\\text{Pa}}$ \\si{\\meter}$^{m_{\\text{diffusion}}}$ \\si{\\per\\second}.");
+                           "Units: \\si{\\meter}$^{m_{\\text{diffusion}}}$ \\si{\\per\\pascal\\second}.");
         prm.declare_entry ("Stress exponents for diffusion creep", "1.",
                            Patterns::List(Patterns::Double(0.)),
                            "List of stress exponents, $n_{\\text{diffusion}}$, for background mantle and compositional fields, "

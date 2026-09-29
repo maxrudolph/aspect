@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2021 - 2022 by the authors of the ASPECT code.
+  Copyright (C) 2021 - 2026 by the authors of the ASPECT code.
 
   This file is part of ASPECT.
 
@@ -20,6 +20,11 @@
 
 #include <aspect/termination_criteria/steady_heat_flux.h>
 #include <aspect/postprocess/heat_flux_map.h>
+
+#include <boost/serialization/list.hpp>
+#include <boost/serialization/map.hpp>
+#include <boost/serialization/utility.hpp>
+
 
 namespace aspect
 {
@@ -141,9 +146,9 @@ namespace aspect
                              "To ensure that a larger number of time steps are included in "
                              "the check for steady state, this value should be much larger "
                              "than the time step size. "
-                             "Units: years if the "
+                             "Units: \\si{\\year} if the "
                              "'Use years instead of seconds' parameter is set; "
-                             "seconds otherwise.");
+                             "\\si{\\second} otherwise.");
           prm.declare_entry ("Boundary indicators", "",
                              Patterns::List (Patterns::Anything()),
                              "A comma separated list of names denoting those boundaries "
@@ -208,6 +213,35 @@ namespace aspect
                    ExcMessage("Relative deviation must be greater than or equal to 0."));
       AssertThrow (necessary_time_in_steady_state > 0,
                    ExcMessage("Steady state minimum time period must be greater than 0."));
+    }
+
+
+
+    template <int dim>
+    void
+    SteadyHeatFlux<dim>::save (std::map<std::string, std::string> &status_strings) const
+    {
+      std::ostringstream os;
+      {
+        aspect::oarchive oa (os);
+        oa << time_heat_flux;
+      }
+      status_strings["SteadyHeatFlux"] = os.str();
+    }
+
+
+
+    template <int dim>
+    void
+    SteadyHeatFlux<dim>::load (const std::map<std::string, std::string> &status_strings)
+    {
+      const auto saved_state = status_strings.find("SteadyHeatFlux");
+      if (saved_state != status_strings.end())
+        {
+          std::istringstream is (saved_state->second);
+          aspect::iarchive ia (is);
+          ia >> time_heat_flux;
+        }
     }
   }
 }

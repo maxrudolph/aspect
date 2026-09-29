@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2014 - 2019 by the authors of the ASPECT code.
+  Copyright (C) 2014 - 2026 by the authors of the ASPECT code.
 
   This file is part of ASPECT.
 
@@ -60,6 +60,8 @@ namespace aspect
       private:
         /**
          * Magnitude of the gravity vector at the surface, m/s^2
+         *
+         * This variable is read from the parameter file through a parameter called 'Magnitude at surface'.
          */
         double magnitude_at_surface;
 
@@ -67,6 +69,8 @@ namespace aspect
          * Magnitude of the gravity vector at the bottom, m/s^2.
          * 'Bottom' means at the maximum depth of the provided geometry, for
          * a full sphere this means the center.
+         *
+         * This variable is read from the parameter file through a parameter called 'Magnitude at bottom'.
          */
         double magnitude_at_bottom;
 

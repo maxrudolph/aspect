@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2011 - 2024 by the authors of the ASPECT code.
+  Copyright (C) 2011 - 2026 by the authors of the ASPECT code.
 
   This file is part of ASPECT.
 
@@ -97,9 +97,9 @@ namespace aspect
 
     prm.declare_entry ("Start time", "0.",
                        Patterns::Double (),
-                       "The start time of the simulation. Units: Years if the "
+                       "The start time of the simulation. Units: \\si{\\year} if the "
                        "'Use years instead of seconds' parameter is set; "
-                       "seconds otherwise.");
+                       "\\si{\\second} otherwise.");
 
     prm.declare_entry ("Timing output frequency", "100",
                        Patterns::Integer(0),
@@ -161,7 +161,7 @@ namespace aspect
                        "The default value is a value so that when converted from years into seconds "
                        "it equals the largest number representable by a floating "
                        "point number, implying an unlimited time step."
-                       "Units: Years or seconds, depending on the ``Use years instead of seconds'' parameter.");
+                       "Units: \\si{\\year} or \\si{\\second}, depending on the ``Use years instead of seconds'' parameter.");
 
     prm.declare_entry ("Maximum first time step",
                        /* boost::lexical_cast<std::string>(std::numeric_limits<double>::max() /
@@ -176,7 +176,7 @@ namespace aspect
                        "The default value is a value so that when converted from years into seconds "
                        "it equals the largest number representable by a floating "
                        "point number, implying an unlimited time step. "
-                       "Units: Years or seconds, depending on the ``Use years instead of seconds'' parameter.");
+                       "Units: \\si{\\year} or \\si{\\second}, depending on the ``Use years instead of seconds'' parameter.");
 
     prm.declare_entry ("Maximum relative increase in time step",
                        "91.0",
@@ -672,7 +672,7 @@ namespace aspect
                            "should use the parameter ``Reaction time steps per advection step'' and set "
                            "this parameter to the same (or larger) value as the ``Maximum time step'' "
                            "(which is 5.69e+300 by default). "
-                           "Units: Years or seconds, depending on the ``Use years instead of seconds'' "
+                           "Units: \\si{\\year} or \\si{\\second}, depending on the ``Use years instead of seconds'' "
                            "parameter.");
 
         prm.declare_entry ("Reaction time steps per advection step", "0",
@@ -995,6 +995,21 @@ namespace aspect
                          "If 0 and time between checkpoint is not specified, "
                          "checkpointing will not be performed. "
                          "Units: None.");
+      prm.declare_entry ("Additional checkpoint times", "",
+                         Patterns::List (Patterns::Double (0.)),
+                         "A list of times so that if the end time of a time step "
+                         "is beyond this time, an additional checkpoint "
+                         "is created. These checkpoint times are independent of the "
+                         "checkpoint frequency specified by ``Time between checkpoint'' "
+                         "and ``Steps between checkpoint'', therefore additional checkpoints "
+                         "can also be created if these parameters are both set to zero. "
+                         "The additional checkpoints are numbered consequetively starting from "
+                         "``Number of checkpoints to keep'' + 1. If a time step is so large "
+                         "that it crosses multiple additional checkpoint times, only one "
+                         "checkpoint is created, and the rest of that time step's checkpoints "
+                         "are not taken into account in the checkpoint numbering. "
+                         "Units: \\si{\\year} if the 'Use years instead "
+                         "of seconds' parameter is set; \\si{\\second} otherwise.");
       prm.declare_entry ("Number of checkpoints to keep", "3",
                          Patterns::Integer (1),
                          "The number of checkpoint slots to rotate through in the "
@@ -1011,8 +1026,8 @@ namespace aspect
                          "If non-negative, resume from the checkpoint whose saved model "
                          "time is closest to this value. This option is ignored when "
                          "Resume checkpoint is set. "
-                         "Units: Years if the 'Use years instead "
-                         "of seconds' parameter is set; seconds otherwise.");
+                         "Units: \\si{\\year} if the 'Use years instead "
+                         "of seconds' parameter is set; \\si{\\second} otherwise.");
     }
     prm.leave_subsection ();
 
@@ -1100,7 +1115,7 @@ namespace aspect
                          "and $Q_{k-1}$ for the pressure. This is because using the "
                          "\\textit{same} polynomial degree for both the velocity and the "
                          "pressure turns out to violate some mathematical properties "
-                         "necessary to make the problem solvable. (In particular, the"
+                         "necessary to make the problem solvable. (In particular, the "
                          "condition in question goes by the name ``inf-sup'' or "
                          "Babu{\\v s}ka-Brezzi or LBB condition.) A consequence of "
                          "violating this condition is that the pressure may show "
@@ -1351,8 +1366,13 @@ namespace aspect
       prm.declare_entry ("Names of fields", "",
                          Patterns::List(Patterns::Anything()),
                          "A user-defined name for each of the compositional fields requested.");
+      prm.declare_entry ("Minimum volume fraction", "0.0",
+                         Patterns::Double(0.0, 1.0),
+                         "Chemical compositional field values strictly smaller than this value "
+                         "can be treated as absent when material models compute composition fractions. "
+                         "The default value includes every nonnegative compositional field value.");
       prm.declare_entry ("Types of fields", "unspecified",
-                         Patterns::List (Patterns::Selection("chemical composition|stress|strain|grain size|porosity|density|entropy|generic|unspecified")),
+                         Patterns::List (Patterns::Selection("chemical composition|stress|strain|grain size|porosity|density|entropy|reaction progress|generic|unspecified")),
                          "A comma separated list denoting a ``type'' for each of the "
                          "compositional fields requested. ASPECT uses these types to "
                          "determine how fields are handled when evaluating the "
@@ -1399,6 +1419,10 @@ namespace aspect
                          "which is coupled to the entropy advection equation "
                          "as described in the paper \\cite{dannberg:etal:2022}."
                          "\n"
+                         "* ``reaction progress'': This type of field represents the progress of a "
+                         "phase transition controlled by reaction kinetics. It will only be "
+                         "considered in material models that include models for time-dependent "
+                         "reaction progress."
                          "* ``generic'': The generic type is intended to be a placeholder type "
                          "that is not used by any component of ASPECT unless in user-"
                          "provided source code."
@@ -1515,6 +1539,10 @@ namespace aspect
                          "at every point and the global maximum is determined. "
                          "Second, the compositional fields to be normalized are "
                          "divided by this maximum.");
+      prm.declare_entry ("Use pressure gradient for darcy field", "false",
+                         Patterns::Bool (),
+                         "Whether to use the pressure gradient for advecting the darcy field. "
+                         "Set to true to use the pressure gradient, false to just use buoyancy forces.");
     }
     prm.leave_subsection ();
 
@@ -1937,6 +1965,17 @@ namespace aspect
     {
       checkpoint_time_secs = prm.get_integer ("Time between checkpoint");
       checkpoint_steps     = prm.get_integer ("Steps between checkpoint");
+      // Extract the list of times at which additional checkpointing is requested,
+      // sort them and convert them to seconds if needed.
+      additional_checkpoint_times
+        = Utilities::string_to_double
+          (Utilities::split_string_list(prm.get ("Additional checkpoint times")));
+      std::sort (additional_checkpoint_times.begin(),
+                 additional_checkpoint_times.end());
+      if (convert_to_years == true)
+        for (double &additional_checkpoint_time : additional_checkpoint_times)
+          additional_checkpoint_time *= year_in_seconds;
+      n_additional_checkpoints_to_keep = additional_checkpoint_times.size();
       n_checkpoints_to_keep = prm.get_integer ("Number of checkpoints to keep");
       resume_checkpoint_id  = prm.get_integer ("Resume checkpoint");
       resume_time           = prm.get_double ("Resume time");
@@ -1962,6 +2001,7 @@ namespace aspect
     prm.enter_subsection ("Compositional fields");
     {
       n_compositional_fields = prm.get_integer ("Number of fields");
+      minimum_composition_fraction = prm.get_double ("Minimum volume fraction");
     }
     prm.leave_subsection();
 
@@ -2097,6 +2137,8 @@ namespace aspect
                                    "there has to be at least one compositional field."));
         }
 
+      use_pressure_gradient_for_darcy_field = prm.get_bool("Use pressure gradient for darcy field");
+
       names_of_compositional_fields = Utilities::split_string_list (prm.get("Names of fields"));
       AssertThrow ((names_of_compositional_fields.size() == 0) ||
                    (names_of_compositional_fields.size() == n_compositional_fields),
@@ -2146,7 +2188,7 @@ namespace aspect
       AssertThrow (normalized_fields.size() <= n_compositional_fields,
                    ExcMessage("Invalid input parameter file: Too many entries in List of normalized fields"));
 
-      for (unsigned int field : normalized_fields)
+      for (const unsigned int field : normalized_fields)
         {
           AssertThrow(field<n_compositional_fields,
                       ExcMessage("Invalid input parameter file: An entry in List of normalized fields is larger then the number of fields."));
@@ -2203,6 +2245,8 @@ namespace aspect
               x_compositional_field_types[i] = "porosity";
             else if (names_of_compositional_fields[i] == "density_field")
               x_compositional_field_types[i] = "density";
+            else if (names_of_compositional_fields[i].find("reaction_progress") != std::string::npos)
+              x_compositional_field_types[i] = "reaction progress";
             else
               x_compositional_field_types[i] = "chemical composition";
           }
@@ -2484,6 +2528,7 @@ namespace aspect
     TimeStepping::Manager<dim>::declare_parameters (prm);
     MaterialModel::declare_parameters<dim> (prm);
     HeatingModel::Manager<dim>::declare_parameters (prm);
+    PrescribedDilation::Manager<dim>::declare_parameters (prm);
     GeometryModel::declare_parameters <dim>(prm);
     InitialTopographyModel::declare_parameters <dim>(prm);
     GravityModel::declare_parameters<dim> (prm);

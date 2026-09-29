@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2011 - 2024 by the authors of the ASPECT code.
+  Copyright (C) 2011 - 2026 by the authors of the ASPECT code.
 
   This file is part of ASPECT.
 
@@ -39,6 +39,7 @@
 #include <aspect/postprocess/visualization.h>
 #include <aspect/prescribed_solution/interface.h>
 #include <aspect/prescribed_stokes_solution/interface.h>
+#include <aspect/simulator/solver/stokes_matrix_free.h>
 
 #include <deal.II/base/index_set.h>
 #include <deal.II/base/conditional_ostream.h>
@@ -109,6 +110,7 @@ namespace aspect
     GeometryModel::write_plugin_graph<dim>(out);
     GravityModel::write_plugin_graph<dim>(out);
     HeatingModel::Manager<dim>::write_plugin_graph(out);
+    PrescribedDilation::Manager<dim>::write_plugin_graph(out);
     InitialComposition::Manager<dim>::write_plugin_graph(out);
     InitialTemperature::Manager<dim>::write_plugin_graph(out);
     MaterialModel::write_plugin_graph<dim>(out);
@@ -527,31 +529,32 @@ namespace aspect
   {
     // Do a checkpoint if this is the end of simulation,
     // and the termination criteria say to checkpoint at the end.
-    bool write_checkpoint = force_writing_checkpoint;
+    bool write_regular_checkpoint = force_writing_checkpoint;
 
     // If we base checkpoint frequency on timing, measure the time at process 0
     // This prevents race conditions where some processes will checkpoint and others won't
-    if (!write_checkpoint && parameters.checkpoint_time_secs > 0)
+    if (!write_regular_checkpoint && parameters.checkpoint_time_secs > 0)
       {
         const bool global_do_checkpoint = Utilities::MPI::broadcast(mpi_communicator,
                                                                     (std::time(nullptr)-last_checkpoint_time) >=
                                                                     parameters.checkpoint_time_secs,
                                                                     /* root= */0);
         if (global_do_checkpoint)
-          write_checkpoint = true;
+          write_regular_checkpoint = true;
       }
 
     // If we base checkpoint frequency on steps, see if it's time for another checkpoint
-    if (!write_checkpoint &&
+    if (!write_regular_checkpoint &&
         (parameters.checkpoint_time_secs == 0) &&
         (parameters.checkpoint_steps > 0) &&
         (timestep_number % parameters.checkpoint_steps == 0))
-      write_checkpoint = true;
+      write_regular_checkpoint = true;
 
     // Do a checkpoint if indicated by checkpoint parameters
-    if (write_checkpoint)
+    if (write_regular_checkpoint)
       {
-        create_snapshot();
+        create_snapshot(/*is_additional_checkpoint = */ false);
+
         // matrices will be regenerated after a resume, so do that here too
         // to be consistent. otherwise we would get different results
         // for a restarted computation than for one that ran straight
@@ -559,7 +562,33 @@ namespace aspect
         rebuild_stokes_matrix =
           rebuild_stokes_preconditioner = true;
       }
-    return write_checkpoint;
+
+    // See if an additional checkpoint needs to be created. Time has already been advanced
+    // to the next timestep, so we need a checkpoint if the next additional checkpoint time
+    // is less than the current time.
+
+    // TODO if through the other criteria we already determined that a checkpoint needs to be created,
+    // we could copy the checkpoint.
+    if ((parameters.additional_checkpoint_times.size() > 0)
+        &&
+        (parameters.additional_checkpoint_times.front () < time))
+      {
+        create_snapshot(/*is_additional_checkpoint = */ true);
+
+        // Remove all additional checkpoint times that are in the past
+        // (including, but not necessarily limited to the one that
+        // made us do a checkpoint):
+        while ((parameters.additional_checkpoint_times.size() > 0)
+               &&
+               (parameters.additional_checkpoint_times.front () < time))
+          parameters.additional_checkpoint_times
+          .erase (parameters.additional_checkpoint_times.begin());
+
+        rebuild_stokes_matrix =
+          rebuild_stokes_preconditioner = true;
+      }
+
+    return write_regular_checkpoint;
   }
 
 
@@ -717,7 +746,6 @@ namespace aspect
     // overall vector, so that they form a contiguous range starting
     // at zero. The assertion checks this, but this could easily be
     // generalized if the Stokes block were not starting at zero.
-#if DEAL_II_VERSION_GTE(9,6,0)
     Assert (introspection.block_indices.velocities == 0,
             ExcNotImplemented());
     if (parameters.use_direct_stokes_solver == false)
@@ -728,9 +756,6 @@ namespace aspect
     stokes_dofs.add_range (0, vec.size());
     const AffineConstraints<double> stokes_hanging_node_constraints
       = hanging_node_constraints.get_view (stokes_dofs);
-#else
-    const AffineConstraints<double> &stokes_hanging_node_constraints = hanging_node_constraints;
-#endif
 
     stokes_hanging_node_constraints.distribute(vec);
   }
@@ -1272,6 +1297,15 @@ namespace aspect
       return false;
     else
       return true;
+  }
+
+
+
+  template <int dim>
+  bool
+  Simulator<dim>::is_stokes_matrix_free() const
+  {
+    return dynamic_cast<StokesMatrixFreeHandler<dim>*>(stokes_solver.get()) != nullptr;
   }
 
 
@@ -2250,7 +2284,7 @@ namespace aspect
     MaterialModel::MaterialModelInputs<dim> in(fe_face_values.n_quadrature_points, introspection.n_compositional_fields);
     MaterialModel::MaterialModelOutputs<dim> out(fe_face_values.n_quadrature_points, introspection.n_compositional_fields);
     MeltHandler<dim>::create_material_model_outputs(out);
-    std::shared_ptr<MaterialModel::MeltOutputs<dim>> fluid_out
+    std::shared_ptr<const MaterialModel::MeltOutputs<dim>> fluid_out
       = out.template get_additional_output_object<MaterialModel::MeltOutputs<dim>>();
 
     const auto &tangential_velocity_boundaries =
@@ -2318,15 +2352,13 @@ namespace aspect
 
                     if (consider_darcy_velocity)
                       {
-                        const double porosity = std::max(in.composition[q][porosity_idx], 1e-10);
                         const Tensor<1,dim> gravity = gravity_model->gravity_vector(in.position[q]);
-                        const double solid_density = out.densities[q];
-                        const double fluid_viscosity = fluid_out->fluid_viscosities[q];
-                        const double fluid_density = fluid_out->fluid_densities[q];
-                        const double permeability = fluid_out->permeabilities[q];
-                        const Tensor<1,dim> boundary_darcy_velocity = boundary_velocity -
-                                                                      permeability / fluid_viscosity / porosity * gravity *
-                                                                      (solid_density - fluid_density);
+                        Tensor<1,dim> boundary_darcy_velocity =
+                          aspect::Utilities::calculate_approximate_darcy_velocity(in,
+                                                                                  out,
+                                                                                  fluid_out, boundary_velocity,
+                                                                                  gravity, porosity_idx, q,
+                                                                                  parameters.use_pressure_gradient_for_darcy_field);
                         integrated_flow += (boundary_darcy_velocity * fe_face_values.normal_vector(q)) *
                                            fe_face_values.JxW(q);
                       }
@@ -2864,6 +2896,7 @@ namespace aspect
   template double Simulator<dim>::compute_initial_stokes_residual(); \
   template bool Simulator<dim>::stokes_matrix_depends_on_solution() const; \
   template bool Simulator<dim>::stokes_A_block_is_symmetric() const; \
+  template bool Simulator<dim>::is_stokes_matrix_free() const; \
   template void Simulator<dim>::interpolate_onto_velocity_system(const TensorFunction<1,dim> &func, LinearAlgebra::Vector &vec) const;\
   template void Simulator<dim>::apply_limiter_to_dg_solutions(const AdvectionField &advection_field); \
   template void Simulator<dim>::compute_unique_advection_support_points(const std::vector<AdvectionField> &advection_fields, \

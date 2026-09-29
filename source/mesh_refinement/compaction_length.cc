@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2015 - 2024 by the authors of the ASPECT code.
+  Copyright (C) 2015 - 2026 by the authors of the ASPECT code.
 
   This file is part of ASPECT.
 
@@ -67,7 +67,7 @@ namespace aspect
             in.reinit(fe_values, cell, this->introspection(), this->get_solution());
             this->get_material_model().evaluate(in, out);
 
-            const std::shared_ptr<MaterialModel::MeltOutputs<dim>> melt_out
+            const std::shared_ptr<const MaterialModel::MeltOutputs<dim>> melt_out
               = out.template get_additional_output_object<MaterialModel::MeltOutputs<dim>>();
             AssertThrow(melt_out != nullptr,
                         ExcMessage("Need MeltOutputs from the material model for computing the melt properties."));

@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2011 - 2019 by the authors of the ASPECT code.
+  Copyright (C) 2011 - 2026 by the authors of the ASPECT code.
 
   This file is part of ASPECT.
 
@@ -105,13 +105,37 @@ namespace aspect
         parse_parameters (ParameterHandler &prm) override;
 
       private:
+        /**
+         * This variable is read from the parameter file through a parameter called 'Inclusion shape'.
+         */
         std::string inclusion_shape;
+        /**
+         * This variable is read from the parameter file through a parameter called 'Inclusion gradient'.
+         */
         std::string inclusion_gradient;
+        /**
+         * This variable is read from the parameter file through a parameter called 'Shape radius'.
+         */
         double radius;
+        /**
+         * This variable is read from the parameter file through a parameter called 'Ambient temperature'.
+         */
         double ambient_temperature;
+        /**
+         * This variable is read from the parameter file through a parameter called 'Inclusion temperature'.
+         */
         double inclusion_temperature;
+        /**
+         * This variable is read from the parameter file through a parameter called 'Center X'.
+         */
         double center_x;
+        /**
+         * This variable is read from the parameter file through a parameter called 'Center Y'.
+         */
         double center_y;
+        /**
+         * This variable is read from the parameter file through a parameter called 'Center Z'.
+         */
         double center_z;
     };
   }

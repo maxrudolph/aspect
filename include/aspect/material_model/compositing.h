@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2011 - 2022 by the authors of the ASPECT code.
+  Copyright (C) 2011 - 2026 by the authors of the ASPECT code.
 
   This file is part of ASPECT.
 
@@ -22,6 +22,7 @@
 #define _aspect_material_model_compositing_h
 
 #include <aspect/material_model/interface.h>
+#include <aspect/material_model/reactive_fluid_transport.h>
 #include <aspect/simulator_access.h>
 
 #include <map>
@@ -139,7 +140,7 @@ namespace aspect
 
     /**
      * Modify the Plugins::plugin_type_matches to account for the compositing material model
-    */
+     */
     template <typename TestType, int dim>
     inline
     bool
@@ -159,13 +160,23 @@ namespace aspect
             return true;
         }
 
+      // Search inside a reactive fluid transport wrapper, which holds a single
+      // base model that provides all solid properties (the property argument
+      // is irrelevant here).
+      if (const auto *reactive_fluid =
+            dynamic_cast<const MaterialModel::ReactiveFluidTransport<dim> *>(&plugin))
+        {
+          if (Plugins::plugin_type_matches<TestType>(reactive_fluid->get_base_model()))
+            return true;
+        }
+
       return false;
     }
 
 
     /**
      * Modify the Plugins::get_plugin_as_type to account for the compositing material model
-    */
+     */
     template <typename TestType, int dim>
     inline
     const TestType &
@@ -183,6 +194,11 @@ namespace aspect
           const auto &submodel = compositing->get_model_for_property(property);
           return Plugins::get_plugin_as_type<TestType>(submodel);
         }
+
+      // Search inside a reactive fluid transport wrapper (single base model).
+      if (const auto *reactive_fluid =
+            dynamic_cast<const MaterialModel::ReactiveFluidTransport<dim> *>(&plugin))
+        return Plugins::get_plugin_as_type<TestType>(reactive_fluid->get_base_model());
 
       AssertThrow(false,
                   ExcMessage("Could not find requested plugin type."));

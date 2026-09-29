@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2011 - 2024 by the authors of the ASPECT code.
+  Copyright (C) 2011 - 2026 by the authors of the ASPECT code.
 
   This file is part of ASPECT.
 
@@ -112,11 +112,11 @@ namespace aspect
                              "for all layers. Units: \\si{meter}.");
           prm.declare_entry ("Surface temperature", "273.15",
                              Patterns::Double (0.),
-                             "The value of the surface temperature. Units: $\\text{K}$.");
+                             "The value of the surface temperature. Units: \\si{\\kelvin}.");
           prm.declare_entry ("Lithosphere-Asthenosphere boundary isotherm", "1673.15",
                              Patterns::Double (0.),
                              "The value of the isotherm that is assumed at the Lithosphere-"
-                             "Asthenosphere boundary. Units: $\\text{K}$.");
+                             "Asthenosphere boundary. Units: \\si{\\kelvin}.");
         }
         prm.leave_subsection();
       }

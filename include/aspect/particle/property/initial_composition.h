@@ -1,5 +1,5 @@
 /*
- Copyright (C) 2015 - 2022 by the authors of the ASPECT code.
+ Copyright (C) 2015 - 2026 by the authors of the ASPECT code.
 
  This file is part of ASPECT.
 
@@ -58,6 +58,13 @@ namespace aspect
                                             std::vector<double> &particle_properties) const override;
 
           /**
+           * @copydoc aspect::Particle::Property::Interface::update_particle_properties()
+           */
+          void
+          update_particle_properties (const ParticleUpdateInputs<dim> &inputs,
+                                      typename ParticleHandler<dim>::particle_iterator_range &particles) const override;
+
+          /**
            * Returns an enum, which determines how this particle property is
            * initialized for particles that are created later than the initial
            * particle generation. For this property the value of
@@ -88,6 +95,27 @@ namespace aspect
            */
           std::vector<std::pair<std::string, unsigned int>>
           get_property_information() const override;
+
+
+          /**
+           * Declare the parameters this class takes through input files.
+           */
+          static
+          void
+          declare_parameters (ParameterHandler &prm);
+
+          /**
+           * Read the parameters this class declares from the parameter file.
+           */
+          void
+          parse_parameters (ParameterHandler &prm) override;
+
+
+        private:
+          /**
+           * A vector for storing the global indices of each property tracked by a given particle manager.
+           */
+          std::vector<unsigned int> selected_compositional_field_indices;
       };
     }
   }

@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2019 - 2024 by the authors of the ASPECT code.
+  Copyright (C) 2019 - 2026 by the authors of the ASPECT code.
 
   This file is part of ASPECT.
 
@@ -84,8 +84,8 @@ namespace aspect
            */
           const DruckerPragerParameters
           compute_drucker_prager_parameters (const unsigned int composition,
-                                             const std::vector<double> &phase_function_values = std::vector<double>(),
-                                             const std::vector<unsigned int> &n_phase_transitions_per_composition = std::vector<unsigned int>()) const;
+                                             const std::vector<double> &phase_function_values = {},
+                                             const std::vector<unsigned int> &n_phase_transitions_per_composition = {}) const;
 
           /**
            * Compute the plastic yield stress based on the Drucker Prager yield criterion.
@@ -128,22 +128,27 @@ namespace aspect
           /**
            * The angles of internal friction (phi) are input
            * by the user in degrees, but stored as radians.
+           *
+           * This variable is read from the parameter file through a parameter called 'Angles of internal friction'.
            */
           std::vector<double> angles_internal_friction;
 
           /**
            * The cohesion is provided and stored in Pa.
+           * This variable is read from the parameter file through a parameter called 'Cohesions'.
            */
           std::vector<double> cohesions;
 
           /**
            * The yield stress is limited to a constant value, stored in Pa.
+           * This variable is read from the parameter file through a parameter called 'Maximum yield stress'.
            */
           double max_yield_stress;
 
           /**
            * The reference strain rate at which the stress is equal to the
            * "yield stress".
+           * This variable is read from the parameter file through a parameter called 'Reference plastic strain rate'.
            */
           double drucker_prager_edot_ref;
 
@@ -155,6 +160,8 @@ namespace aspect
 
           /**
            * The stress exponent n of the pseudo-plastic element.
+           *
+           * This variable is read from the parameter file through a parameter called 'Plastic stress exponent'.
            */
           double drucker_prager_stress_exponent;
 

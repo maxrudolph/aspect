@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2022 by the authors of the ASPECT code.
+  Copyright (C) 2022 - 2026 by the authors of the ASPECT code.
 
   This file is part of ASPECT.
 
@@ -18,7 +18,9 @@
   <http://www.gnu.org/licenses/>.
 */
 
-#include <aspect/simulator.h>
+
+#include <aspect/simulator_signals.h>
+#include <aspect/introspection.h>
 #include <aspect/parameters.h>
 
 template <int dim>
@@ -47,6 +49,8 @@ void f(const aspect::SimulatorAccess<dim> &simulator_access,
         std::cout << c_names[i] << " is of type generic" << std::endl;
       if (descriptions[i].type == aspect::CompositionalFieldDescription::stress)
         std::cout << c_names[i] << " is of type stress" << std::endl;
+      if (descriptions[i].type == aspect::CompositionalFieldDescription::reaction_progress)
+        std::cout << c_names[i] << " is of type reaction progress" << std::endl;
       if (descriptions[i].type == aspect::CompositionalFieldDescription::unspecified)
         std::cout << c_names[i] << " is of type unspecified" << std::endl;
     }

@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2011 - 2021 by the authors of the ASPECT code.
+  Copyright (C) 2011 - 2026 by the authors of the ASPECT code.
 
   This file is part of ASPECT.
 
@@ -48,7 +48,7 @@ namespace aspect
         prm.declare_entry ("Wall time",
                            "24.",
                            Patterns::Double (0.),
-                           "The wall time of the simulation. Unit: hours.");
+                           "The wall time of the simulation. Unit: \\si{\\hour}.");
       }
       prm.leave_subsection ();
     }

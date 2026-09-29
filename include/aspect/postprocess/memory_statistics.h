@@ -1,5 +1,5 @@
 /*
- Copyright (C) 2016 - 2019 by the authors of the ASPECT code.
+ Copyright (C) 2016 - 2026 by the authors of the ASPECT code.
 
  This file is part of ASPECT.
 
@@ -59,6 +59,9 @@ namespace aspect
         parse_parameters (ParameterHandler &prm) override;
 
       private:
+        /**
+         * This variable is read from the parameter file through a parameter called 'Output peak virtual memory (VmPeak)'.
+         */
         bool output_vmpeak;
     };
   }

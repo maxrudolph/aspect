@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2020 - 2024 by the authors of the ASPECT code.
+  Copyright (C) 2020 - 2026 by the authors of the ASPECT code.
 
   This file is part of ASPECT.
 
@@ -110,11 +110,15 @@ namespace aspect
          * The hillslope transport coefficient or diffusivity [m2/s]
          * used in the hillslope diffusion of the deformed
          * surface.
+         *
+         * This variable is read from the parameter file through a parameter called 'Hillslope transport coefficient'.
          */
         double diffusivity;
 
         /**
          * Maximum number of steps between the application of diffusion.
+         *
+         * This variable is read from the parameter file through a parameter called 'Time steps between diffusion'.
          */
         unsigned int timesteps_between_diffusion;
 

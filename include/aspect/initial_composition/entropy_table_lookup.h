@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2017 - 2023 by the authors of the ASPECT code.
+  Copyright (C) 2017 - 2026 by the authors of the ASPECT code.
 
   This file is part of ASPECT.
 
@@ -71,9 +71,13 @@ namespace aspect
 
       private:
         /**
-         * Information about the location of data files.
+         * Location of data files. This variable is read from the parameter
+         * file through the 'Data directory' parameter.
          */
         std::string data_directory;
+        /**
+         * This variable is read from the parameter file through a parameter called 'Material file name'.
+         */
         std::string material_file_name;
 
         /**

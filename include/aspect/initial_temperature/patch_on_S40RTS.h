@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2011 - 2019 by the authors of the ASPECT code.
+  Copyright (C) 2011 - 2026 by the authors of the ASPECT code.
 
   This file is part of ASPECT.
 
@@ -68,6 +68,8 @@ namespace aspect
         /**
          * This parameter gives the maximum depth of the Vs ascii grid. The
          * model will read in Vs from S40RTS below this depth.
+         *
+         * This variable is read from the parameter file through a parameter called 'Maximum grid depth'.
          */
         double max_grid_depth;
 
@@ -75,6 +77,7 @@ namespace aspect
          * This parameter gives the range (above maximum grid depth) over which to smooth.
          * Smoothing is done with a depth weighted combination of the values in the ascii grid and S40RTS
          * at each point.
+         * This variable is read from the parameter file through a parameter called 'Smoothing length scale'.
          */
         double smoothing_length_scale;
 
@@ -109,6 +112,8 @@ namespace aspect
         /**
          * This parameter is the depth down to which shear wave perturbations are
          * zeroed out.
+         *
+         * This variable is read from the parameter file through a parameter called 'Remove temperature heterogeneity down to specified depth'.
          */
         double no_perturbation_depth_patch;
 

@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2025 - by the authors of the ASPECT code.
+  Copyright (C) 2025 - 2026 - by the authors of the ASPECT code.
 
   This file is part of ASPECT.
 
@@ -77,6 +77,8 @@ namespace aspect
          * used in the histogram which computes the density
          * distribution score.  For example, a value of 2 means
          * $2\times 2=4$ buckets in 2D.
+         *
+         * This variable is read from the parameter file through a parameter called 'Granularity'.
          */
         unsigned int granularity;
 
@@ -84,6 +86,7 @@ namespace aspect
          * Sorts all of the particles within the cell into a deal.II table based on their position.
          * @param cell The cell for which to compute the particle distribution.
          * @param bucket_width The size (relative to the size of the cell) of each bucket in the table.
+         * @param particle_manager_index The particle manager to grab the particles from.
          * @return The table with the particle information.
          */
         Table<dim,unsigned int>

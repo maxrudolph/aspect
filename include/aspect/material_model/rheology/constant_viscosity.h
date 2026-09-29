@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2019 by the authors of the ASPECT code.
+  Copyright (C) 2019 - 2026 by the authors of the ASPECT code.
 
   This file is part of ASPECT.
 
@@ -63,6 +63,8 @@ namespace aspect
            * The constant viscosity that defines this rheology. It
            * is read from the input file by the parse_parameters()
            * function.
+           *
+           * This variable is read from the parameter file through a parameter called 'Viscosity'.
            */
           double viscosity;
       };

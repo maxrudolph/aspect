@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2011 - 2023 by the authors of the ASPECT code.
+  Copyright (C) 2011 - 2026 by the authors of the ASPECT code.
 
   This file is part of ASPECT.
 
@@ -18,7 +18,7 @@
   <http://www.gnu.org/licenses/>.
 */
 
-
+#include <algorithm>
 #include <aspect/material_model/simple.h>
 #include <aspect/material_model/equation_of_state/interface.h>
 
@@ -44,10 +44,10 @@ namespace aspect
           const double temperature_dependence
             = (reference_T > 0
                ?
-               std::max(std::min(std::exp(-thermal_viscosity_exponent *
-                                          delta_temp/reference_T),
-                                 maximum_thermal_prefactor),
-                        minimum_thermal_prefactor)
+               std::clamp(std::exp(-thermal_viscosity_exponent *
+                                   delta_temp/reference_T),
+                          minimum_thermal_prefactor,
+                          maximum_thermal_prefactor)
                :
                1.0);
 
@@ -114,12 +114,12 @@ namespace aspect
           prm.declare_entry ("Reference temperature", "293.",
                              Patterns::Double (0.),
                              "The reference temperature $T_0$. The reference temperature is used "
-                             "in both the density and viscosity formulas. Units: $\\text{K}$.");
+                             "in both the density and viscosity formulas. Units: \\si{\\kelvin}.");
           prm.declare_entry ("Viscosity", "5e24",
                              Patterns::Double (0.),
                              "The value of the constant viscosity $\\eta_0$. This viscosity may be "
                              "modified by both temperature and compositional dependencies. "
-                             "Units: $\\text{Pa}\\text{s}$.");
+                             "Units: \\si{\\pascal\\second}.");
           prm.declare_entry ("Composition viscosity prefactor", "1.0",
                              Patterns::Double (0.),
                              "A linear dependency of viscosity on the first compositional field. "
@@ -144,7 +144,7 @@ namespace aspect
           prm.declare_entry ("Thermal conductivity", "4.7",
                              Patterns::Double (0.),
                              "The value of the thermal conductivity $k$. "
-                             "Units: $\\frac{\\text{W}}{\\text{m}\\text{K}}$.");
+                             "Units: \\si{\\watt\\per\\meter\\per\\kelvin}.");
         }
         prm.leave_subsection();
       }

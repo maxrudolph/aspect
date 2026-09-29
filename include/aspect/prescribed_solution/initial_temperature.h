@@ -52,9 +52,9 @@ namespace aspect
         InitialTemperature ();
 
         /**
-        * Store a shared pointer to the initial temperature manager so the
-        * plugin can safely access it after initialization.
-        */
+         * Store a shared pointer to the initial temperature manager so the
+         * plugin can safely access it after initialization.
+         */
         void initialize () override;
 
         /**
@@ -92,6 +92,8 @@ namespace aspect
         /**
          * The coordinate representation used to evaluate the indicator
          * function. Possible choices are cartesian, spherical, and depth.
+         *
+         * This variable is read from the parameter file through a parameter called 'Coordinate system'.
          */
         Utilities::Coordinates::CoordinateSystem coordinate_system;
 

@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2011 - 2022 by the authors of the ASPECT code.
+  Copyright (C) 2011 - 2026 by the authors of the ASPECT code.
 
   This file is part of ASPECT.
 
@@ -97,14 +97,31 @@ namespace aspect
 
 
       private:
+        /**
+         * This variable is read from the parameter file through a parameter called 'Reference temperature'.
+         */
         double reference_T;
+        /**
+         * This variable is read from the parameter file through a parameter called 'Viscosity'.
+         */
         double eta;
+        /**
+         * This variable is read from the parameter file through a parameter called 'Composition viscosity prefactor 1'.
+         */
         double composition_viscosity_prefactor_1;
+        /**
+         * This variable is read from the parameter file through a parameter called 'Composition viscosity prefactor 2'.
+         */
         double composition_viscosity_prefactor_2;
+        /**
+         * This variable is read from the parameter file through a parameter called 'Thermal viscosity exponent'.
+         */
         double thermal_viscosity_exponent;
 
         /**
          * The thermal conductivity.
+         *
+         * This variable is read from the parameter file through a parameter called 'Thermal conductivity'.
          */
         double k_value;
 
@@ -113,6 +130,8 @@ namespace aspect
         /**
          * Above this depth the compositional fields react: The first field
          * gets converted to the second field.
+         *
+         * This variable is read from the parameter file through a parameter called 'Reaction depth'.
          */
         double reaction_depth;
     };

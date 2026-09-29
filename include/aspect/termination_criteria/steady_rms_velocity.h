@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2011 - 2021 by the authors of the ASPECT code.
+  Copyright (C) 2011 - 2026 by the authors of the ASPECT code.
 
   This file is part of ASPECT.
 
@@ -62,8 +62,23 @@ namespace aspect
         void
         parse_parameters (ParameterHandler &prm) override;
 
+        void
+        save (std::map<std::string, std::string> &status_strings) const override;
+
+        void
+        load (const std::map<std::string, std::string> &status_strings) override;
+
       private:
+        /**
+         * This variable is read from the parameter file through a parameter
+         * called 'Time in steady state'.
+         */
         double                                  time_length;
+
+        /**
+         * This variable is read from the parameter file through a parameter
+         * called 'Maximum relative deviation'.
+         */
         double                                  relative_deviation;
 
         /**

@@ -1,5 +1,5 @@
 /*
- Copyright (C) 2023 - 2024 by the authors of the ASPECT code.
+ Copyright (C) 2023 - 2026 by the authors of the ASPECT code.
 
  This file is part of ASPECT.
 
@@ -164,11 +164,17 @@ namespace aspect
 
           /**
            * The number of grains per particle.
+           *
+           * This variable is read from the parameter file through a parameter
+           * called 'Number of grains per particle'.
            */
           unsigned int n_grains;
 
           /**
            * The number of minerals per particle.
+           *
+           * This variable is read from the parameter file through a parameter
+           * called 'Minerals'.
            */
           unsigned int n_minerals;
 

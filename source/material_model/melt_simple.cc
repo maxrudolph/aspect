@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2015 - 2024 by the authors of the ASPECT code.
+  Copyright (C) 2015 - 2026 by the authors of the ASPECT code.
 
   This file is part of ASPECT.
 
@@ -18,7 +18,7 @@
   <http://www.gnu.org/licenses/>.
 */
 
-
+#include <algorithm>
 #include <aspect/adiabatic_conditions/interface.h>
 #include <aspect/material_model/melt_simple.h>
 #include <aspect/material_model/reaction_model/katz2003_mantle_melting.h>
@@ -117,7 +117,7 @@ namespace aspect
           if (this->include_adiabatic_heating ())
             {
               const double delta_temp = in.temperature[i]-this->get_adiabatic_conditions().temperature(in.position[i]);
-              visc_temperature_dependence = std::max(std::min(std::exp(-thermal_viscosity_exponent*delta_temp/this->get_adiabatic_conditions().temperature(in.position[i])),1e4),1e-4);
+              visc_temperature_dependence = std::clamp(std::exp(-thermal_viscosity_exponent*delta_temp/this->get_adiabatic_conditions().temperature(in.position[i])), 1e-4, 1e4);
             }
           else
             {
@@ -127,7 +127,7 @@ namespace aspect
                                            0.0
                                            :
                                            thermal_viscosity_exponent*delta_temp/reference_T);
-              visc_temperature_dependence = std::max(std::min(std::exp(-T_dependence),1e4),1e-4);
+              visc_temperature_dependence = std::clamp(std::exp(-T_dependence), 1e-4, 1e4);
             }
           out.viscosities[i] *= visc_temperature_dependence;
 
@@ -166,24 +166,24 @@ namespace aspect
           prm.declare_entry ("Thermal expansion coefficient", "2e-5",
                              Patterns::Double (0.),
                              "The value of the thermal expansion coefficient $\\beta$. "
-                             "Units: $\\frac{1}{\\text{K}}$.");
+                             "Units: \\si{\\per\\kelvin}.");
           prm.declare_entry ("Reference shear viscosity", "5e20",
                              Patterns::Double (0.),
                              "The value of the constant viscosity $\\eta_0$ of the solid matrix. "
                              "This viscosity may be modified by both temperature and porosity "
-                             "dependencies. Units: $\\text{Pa}\\text{s}$.");
+                             "dependencies. Units: \\si{\\pascal\\second}.");
           prm.declare_entry ("Reference specific heat", "1250.",
                              Patterns::Double (0.),
                              "The value of the specific heat $C_p$. "
-                             "Units: $\\frac{\\text{J}}{\\text{K}\\text{kg}}$.");
+                             "Units: \\si{\\joule\\per\\kelvin\\per\\kilogram}.");
           prm.declare_entry ("Thermal conductivity", "4.7",
                              Patterns::Double (0.),
                              "The value of the thermal conductivity $k$. "
-                             "Units: $\\frac{\\text{W}}{\\text{m}\\text{K}}$.");
+                             "Units: \\si{\\watt\\per\\meter\\per\\kelvin}.");
           prm.declare_entry ("Solid compressibility", "0.0",
                              Patterns::Double (0.),
                              "The value of the compressibility of the solid matrix. "
-                             "Units: $\\frac{1}{\\text{Pa}}$.");
+                             "Units: \\si{\\per\\pascal}.");
           prm.declare_entry ("Thermal viscosity exponent", "0.0",
                              Patterns::Double (0.),
                              "The temperature dependence of the shear viscosity. Dimensionless exponent. "
@@ -193,7 +193,7 @@ namespace aspect
           prm.declare_entry ("Reference temperature", "293.",
                              Patterns::Double (0.),
                              "The reference temperature $T_0$. The reference temperature is used "
-                             "in both the density and viscosity formulas. Units: $\\text{K}$.");
+                             "in both the density and viscosity formulas. Units: \\si{\\kelvin}.");
           prm.declare_entry ("Depletion density change", "0.0",
                              Patterns::Double (),
                              "The density contrast between material with a depletion of 1 and a "
@@ -201,11 +201,11 @@ namespace aspect
                              "depleted material. Depletion is indicated by the compositional "
                              "field with the name peridotite. Not used if this field does not "
                              "exist in the model. "
-                             "Units: $\\frac{\\text{kg}}{\\text{m}^3}$.");
+                             "Units: \\si{\\kilogram\\per\\meter\\cubed}.");
           prm.declare_entry ("Reference solid density", "3000.",
                              Patterns::Double (0.),
                              "Reference density of the solid $\\rho_{s,0}$. "
-                             "Units: $\\frac{\\text{kg}}{\\text{m}^3}$.");
+                             "Units: \\si{\\kilogram\\per\\meter\\cubed}.");
         }
         prm.leave_subsection();
       }

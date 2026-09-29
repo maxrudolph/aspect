@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2011 - 2020 by the authors of the ASPECT code.
+  Copyright (C) 2011 - 2026 by the authors of the ASPECT code.
 
   This file is part of ASPECT.
 
@@ -53,7 +53,8 @@ namespace aspect
         {
           prm.declare_entry ("Magnitude", "9.81",
                              Patterns::Double (),
-                             "Magnitude of the gravity vector in $m/s^2$. For positive values "
+                             "Magnitude of the gravity vector in $\\si{\\meter\\per\\second\\squared}$. "
+                             "For positive values "
                              "the direction is radially inward towards the center of the earth.");
         }
         prm.leave_subsection ();

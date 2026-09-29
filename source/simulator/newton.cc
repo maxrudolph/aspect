@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2016 - 2024 by the authors of the ASPECT code.
+  Copyright (C) 2016 - 2026 by the authors of the ASPECT code.
 
   This file is part of ASPECT.
 
@@ -20,10 +20,11 @@
 
 
 #include <aspect/newton.h>
+
+#include <aspect/boundary_traction/interface.h>
+#include <aspect/prescribed_dilation/interface.h>
 #include <aspect/simulator/assemblers/advection.h>
 #include <aspect/simulator/assemblers/stokes.h>
-
-#include <aspect/simulator.h>
 
 namespace aspect
 {
@@ -52,7 +53,8 @@ namespace aspect
     assemblers.stokes_system.push_back(std::make_unique<aspect::Assemblers::NewtonStokesIncompressibleTerms<dim>>());
 
     if (this->get_material_model().is_compressible() ||
-        this->get_parameters().enable_prescribed_dilation)
+        this->get_parameters().enable_prescribed_dilation ||
+        this->get_prescribed_dilation_manager().get_active_plugin_names().size() > 0)
       {
         // The compressible part of the preconditioner is only necessary if we use the simplified A block
         if (this->get_parameters().use_full_A_block_preconditioner == false)
@@ -109,6 +111,10 @@ namespace aspect
     if (this->pressure_rhs_needs_compatibility_modification())
       assemblers.stokes_system.push_back(
         std::make_unique<aspect::Assemblers::StokesPressureRHSCompatibilityModification<dim>>());
+
+    if (this->get_prescribed_dilation_manager().get_active_plugin_names().size() > 0)
+      assemblers.stokes_system.push_back(
+        std::make_unique<aspect::Assemblers::StokesPrescribedDilation<dim>>());
   }
 
 

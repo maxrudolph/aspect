@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2022 - 2023 by the authors of the ASPECT code.
+  Copyright (C) 2022 - 2026 by the authors of the ASPECT code.
 
   This file is part of ASPECT.
 
@@ -18,7 +18,8 @@
   <http://www.gnu.org/licenses/>.
 */
 
-#include <aspect/simulator.h>
+#include <algorithm>
+
 #include <deal.II/grid/tria.h>
 #include <aspect/simulator_access.h>
 #include <aspect/newton.h>
@@ -248,7 +249,7 @@ namespace aspect
         }
 
       if (compute_full_viscosity == true)
-        return std::max(std::min(viscosity, max_visc), min_visc);
+        return std::clamp(viscosity, min_visc, max_visc);
       else
         return viscosity;
     }

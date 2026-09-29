@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2023 - 2024 by the authors of the ASPECT code.
+  Copyright (C) 2023 - 2026 by the authors of the ASPECT code.
 
   This file is part of ASPECT.
 
@@ -18,7 +18,7 @@
   <http://www.gnu.org/licenses/>.
 */
 
-
+#include <algorithm>
 #include <aspect/geometry_model/initial_topography_model/zero_topography.h>
 
 #include <aspect/geometry_model/interface.h>
@@ -282,7 +282,7 @@ namespace aspect
       Assert(dim==2, ExcNotImplemented());
       const double y_extent = 600e3;
       const double d = y_extent - (position(dim-1));
-      return std::min (std::max (d, 0.), maximal_depth());
+      return std::clamp(d, 0., maximal_depth());
     }
 
 

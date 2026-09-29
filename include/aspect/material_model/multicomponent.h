@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2014 - 2022 by the authors of the ASPECT code.
+  Copyright (C) 2014 - 2026 by the authors of the ASPECT code.
 
   This file is part of ASPECT.
 
@@ -110,21 +110,27 @@ namespace aspect
         /**
          * Reference temperature for thermal expansion.  All components use
          * the same reference_T.
+         *
+         * This variable is read from the parameter file through a parameter called 'Reference temperature'.
          */
         double reference_T;
 
         /**
          * Enumeration for selecting which viscosity averaging scheme to use.
+         * This variable is read from the parameter file through a parameter called 'Viscosity averaging scheme'.
          */
         MaterialUtilities::CompositionalAveragingOperation viscosity_averaging;
 
         /**
          * Vector for field viscosities, read from parameter file.
+         * This variable is read from the parameter file through a parameter called 'Viscosities'.
          */
         std::vector<double> viscosities;
 
         /**
          * Vector for field thermal conductivities, read from parameter file.
+         *
+         * This variable is read from the parameter file through a parameter called 'Thermal conductivities'.
          */
         std::vector<double> thermal_conductivities;
 

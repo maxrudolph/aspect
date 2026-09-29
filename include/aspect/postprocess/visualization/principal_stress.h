@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2020 - 2021 by the authors of the ASPECT code.
+  Copyright (C) 2020 - 2026 by the authors of the ASPECT code.
 
   This file is part of ASPECT.
 
@@ -72,6 +72,8 @@ namespace aspect
           /**
            * Whether to use the deviatoric stress tensor instead of the full stress
            * tensor to compute principal directions and values.
+           *
+           * This variable is read from the parameter file through a parameter called 'Use deviatoric stress'.
            */
           bool use_deviatoric_stress;
       };

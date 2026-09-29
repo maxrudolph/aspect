@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2017 - 2022 by the authors of the ASPECT code.
+  Copyright (C) 2017 - 2026 by the authors of the ASPECT code.
 
   This file is part of ASPECT.
 
@@ -212,6 +212,21 @@ namespace aspect
      */
     template <int dim>
     class StokesPressureRHSCompatibilityModification : public Assemblers::Interface<dim>,
+      public SimulatorAccess<dim>
+    {
+      public:
+        void
+        execute(internal::Assembly::Scratch::ScratchBase<dim>   &scratch_base,
+                internal::Assembly::CopyData::CopyDataBase<dim> &data_base) const override;
+    };
+
+    /**
+     * This class adds source term to the right hand side of the
+     * continuity equation. The prescribed quantity is taken from
+     * PrescribedDilation plugin.
+     */
+    template <int dim>
+    class StokesPrescribedDilation : public Assemblers::Interface<dim>,
       public SimulatorAccess<dim>
     {
       public:

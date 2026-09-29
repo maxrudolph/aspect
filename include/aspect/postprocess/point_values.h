@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2016 - 2021 by the authors of the ASPECT code.
+  Copyright (C) 2016 - 2026 by the authors of the ASPECT code.
 
   This file is part of ASPECT.
 
@@ -98,6 +98,8 @@ namespace aspect
 
         /**
          * Interval between the generation of output in seconds.
+         *
+         * This variable is read from the parameter file through a parameter called 'Time between point values output'.
          */
         double output_interval;
 
@@ -120,6 +122,8 @@ namespace aspect
         /**
          * Whether or not to interpret the evaluation points in the input file
          * as natural coordinates or not.
+         *
+         * This variable is read from the parameter file through a parameter called 'Use natural coordinates'.
          */
         bool use_natural_coordinates;
     };

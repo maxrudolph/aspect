@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2011 - 2019 by the authors of the ASPECT code.
+  Copyright (C) 2011 - 2026 by the authors of the ASPECT code.
 
   This file is part of ASPECT.
 
@@ -82,6 +82,13 @@ namespace aspect
         parse_parameters (ParameterHandler &prm) override;
 
       private:
+        /**
+         * The values of the various temperature variables on each of the boundaries of the box.
+         *
+         * This variable is read from the parameter file through parameters called 'Left composition',
+         * 'Right composition', 'Bottom composition', 'Top composition',
+         * 'Front composition', and 'Back composition'.
+         */
         double temperature_[2*dim];
     };
   }

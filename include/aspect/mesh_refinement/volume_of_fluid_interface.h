@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2016 - 2019-2018 by the authors of the ASPECT code.
+  Copyright (C) 2016 - 2026-2018 by the authors of the ASPECT code.
 
   This file is part of ASPECT.
 
@@ -64,6 +64,8 @@ namespace aspect
       private:
         /**
          * If true, flag cells for coarsening if they are not flagged for refinement
+         *
+         * This variable is read from the parameter file through a parameter called 'Strict coarsening'.
          */
         bool strict_coarsening;
     };

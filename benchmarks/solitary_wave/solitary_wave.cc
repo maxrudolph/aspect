@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2011 - 2024 by the authors of the ASPECT code.
+  Copyright (C) 2011 - 2026 by the authors of the ASPECT code.
 
   This file is part of ASPECT.
 
@@ -611,7 +611,7 @@ namespace aspect
                              "Background porosity of the solitary wave. Units: none.");
           prm.declare_entry ("Offset", "150",
                              Patterns::Double (0),
-                             "Offset of the center of the solitary wave from the boundary"
+                             "Offset of the center of the solitary wave from the boundary "
                              "of the domain. "
                              "Units: \\si{\\meter}.");
           prm.declare_entry ("Read solution from file", "false",

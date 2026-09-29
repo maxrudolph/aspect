@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2011 - 2024 by the authors of the ASPECT code.
+  Copyright (C) 2011 - 2026 by the authors of the ASPECT code.
 
   This file is part of ASPECT.
 
@@ -20,16 +20,7 @@
 
 
 #include <aspect/postprocess/topography.h>
-#include <aspect/geometry_model/box.h>
 #include <aspect/geometry_model/sphere.h>
-#include <aspect/geometry_model/spherical_shell.h>
-#include <aspect/geometry_model/chunk.h>
-#include <aspect/simulator.h>
-#include <aspect/global.h>
-
-#include <deal.II/fe/fe_values.h>
-#include <deal.II/base/quadrature_lib.h>
-#include <deal.II/fe/fe_values.h>
 
 #include <cmath>
 #include <limits>
@@ -39,6 +30,15 @@ namespace aspect
 {
   namespace Postprocess
   {
+
+    template <int dim>
+    Topography<dim>::Topography()
+      : last_output_time(std::numeric_limits<double>::lowest())
+    {
+    }
+
+
+
     template <int dim>
     std::pair<std::string,std::string>
     Topography<dim>::execute (TableHandler &statistics)
@@ -125,7 +125,7 @@ namespace aspect
       // if this is the first time we get here, set the last output time
       // to the current time - output_interval. this makes sure we
       // always produce data during the first time step
-      if (std::isnan(last_output_time))
+      if (last_output_time < this->get_parameters().start_time - output_interval)
         last_output_time = this->get_time() - output_interval;
 
       // Just return stats if text output is not required at all or not needed at this time
@@ -188,9 +188,9 @@ namespace aspect
                              "The time interval between each generation of "
                              "text output files. A value of zero indicates "
                              "that output should be generated in each time step. "
-                             "Units: years if the "
+                             "Units: \\si{\\year} if the "
                              "'Use years instead of seconds' parameter is set; "
-                             "seconds otherwise.");
+                             "\\si{\\second} otherwise.");
         }
         prm.leave_subsection();
       }

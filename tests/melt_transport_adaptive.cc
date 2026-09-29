@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2022 - 2024 by the authors of the ASPECT code.
+  Copyright (C) 2022 - 2026 by the authors of the ASPECT code.
 
   This file is part of ASPECT.
 
@@ -27,7 +27,7 @@
 #include <aspect/global.h>
 #include <aspect/mesh_refinement/interface.h>
 #include <aspect/melt.h>
-#include <aspect/simulator.h>
+
 
 #include <deal.II/dofs/dof_tools.h>
 #include <deal.II/numerics/data_out.h>
@@ -133,7 +133,7 @@ namespace aspect
 
               this->get_material_model().evaluate(in, out);
 
-              const std::shared_ptr<MaterialModel::MeltOutputs<dim>> melt_out
+              const std::shared_ptr<const MaterialModel::MeltOutputs<dim>> melt_out
                 = out.template get_additional_output_object<MaterialModel::MeltOutputs<dim>>();
               AssertThrow(melt_out != nullptr,
                           ExcMessage("Need MeltOutputs from the material model for computing the melt properties."));

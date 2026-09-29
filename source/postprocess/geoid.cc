@@ -1,5 +1,5 @@
 /*
- Copyright (C) 2015 - 2024 by the authors of the ASPECT code.
+ Copyright (C) 2015 - 2026 by the authors of the ASPECT code.
 
  This file is part of ASPECT.
 
@@ -19,12 +19,13 @@
  */
 
 
-#include <aspect/simulator.h>
-#include <aspect/mesh_deformation/free_surface.h>
-#include <aspect/utilities.h>
 #include <aspect/postprocess/geoid.h>
 #include <aspect/postprocess/dynamic_topography.h>
 #include <aspect/postprocess/boundary_densities.h>
+
+#include <aspect/gravity_model/interface.h>
+#include <aspect/mesh_deformation/free_surface.h>
+#include <aspect/utilities.h>
 #include <aspect/geometry_model/spherical_shell.h>
 
 #include <deal.II/base/quadrature_lib.h>
@@ -149,13 +150,8 @@ namespace aspect
                         const double r_q = in.position[q].norm();
                         const double JxW = fe_values.JxW(q);
 
-#if DEAL_II_VERSION_GTE(9,6,0)
                         integrated_density_cos_component += density * (1./r_q) * Utilities::pow(r_q/outer_radius,ideg+1) * cos_component * JxW;
                         integrated_density_sin_component += density * (1./r_q) * Utilities::pow(r_q/outer_radius,ideg+1) * sin_component * JxW;
-#else
-                        integrated_density_cos_component += density * (1./r_q) * std::pow(r_q/outer_radius,ideg+1) * cos_component * JxW;
-                        integrated_density_sin_component += density * (1./r_q) * std::pow(r_q/outer_radius,ideg+1) * sin_component * JxW;
-#endif
                       }
                   }
               SH_density_coecos.push_back(integrated_density_cos_component);
@@ -474,17 +470,10 @@ namespace aspect
                   surface_topo_contribution_coecos.push_back(coecos_surface_topo);
                   surface_topo_contribution_coesin.push_back(coesin_surface_topo);
 
-#if DEAL_II_VERSION_GTE(9,6,0)
                   const double coecos_CMB_topo = (4 * numbers::PI * G / (surface_gravity * (2 * ideg + 1)))
                                                  * CMB_delta_rho*SH_CMB_topo_coes.second.first.at(ind)*inner_radius*Utilities::pow(inner_radius/outer_radius,ideg+1);
                   const double coesin_CMB_topo = (4 * numbers::PI * G / (surface_gravity * (2 * ideg + 1)))
                                                  * CMB_delta_rho*SH_CMB_topo_coes.second.second.at(ind)*inner_radius*Utilities::pow(inner_radius/outer_radius,ideg+1);
-#else
-                  const double coecos_CMB_topo = (4 * numbers::PI * G / (surface_gravity * (2 * ideg + 1)))
-                                                 * CMB_delta_rho*SH_CMB_topo_coes.second.first.at(ind)*inner_radius*std::pow(inner_radius/outer_radius,ideg+1);
-                  const double coesin_CMB_topo = (4 * numbers::PI * G / (surface_gravity * (2 * ideg + 1)))
-                                                 * CMB_delta_rho*SH_CMB_topo_coes.second.second.at(ind)*inner_radius*std::pow(inner_radius/outer_radius,ideg+1);
-#endif
                   CMB_topo_contribution_coecos.push_back(coecos_CMB_topo);
                   CMB_topo_contribution_coesin.push_back(coesin_CMB_topo);
 

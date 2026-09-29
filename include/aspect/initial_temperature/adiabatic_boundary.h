@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2016 - 2020 by the authors of the ASPECT code.
+  Copyright (C) 2016 - 2026 by the authors of the ASPECT code.
 
   This file is part of ASPECT.
 
@@ -76,8 +76,17 @@ namespace aspect
 
       private:
 
+        /**
+         * This variable is read from the parameter file through a parameter called 'Isotherm temperature'.
+         */
         double isotherm_temperature;
+        /**
+         * This variable is read from the parameter file through a parameter called 'Surface temperature'.
+         */
         double surface_temperature;
+        /**
+         * This variable is read from the parameter file through a parameter called 'Adiabatic temperature gradient'.
+         */
         double temperature_gradient;
         types::boundary_id surface_boundary_id;
 

@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2016 - 2024 by the authors of the ASPECT code.
+  Copyright (C) 2016 - 2026 by the authors of the ASPECT code.
 
   This file is part of ASPECT.
 
@@ -216,7 +216,6 @@ namespace aspect
       internal::Assembly::CopyData::StokesPreconditioner<dim> &data = dynamic_cast<internal::Assembly::CopyData::StokesPreconditioner<dim>&> (data_base);
 
       const Introspection<dim> &introspection = this->introspection();
-      const FiniteElement<dim> &fe = this->get_fe();
       const unsigned int   stokes_dofs_per_cell = data.local_dof_indices.size();
       const unsigned int   n_q_points      = scratch.finite_element_values.n_quadrature_points;
       const double pressure_scaling = this->get_pressure_scaling();
@@ -230,42 +229,20 @@ namespace aspect
                                                                        this->get_melt_handler(),
                                                                        true);
 
-      const std::shared_ptr<MaterialModel::MeltOutputs<dim>> melt_outputs
+      const std::shared_ptr<const MaterialModel::MeltOutputs<dim>> melt_outputs
         = scratch.material_model_outputs.template get_additional_output_object<MaterialModel::MeltOutputs<dim>>();
 
       const FEValuesExtractors::Scalar ex_p_f = introspection.variable("fluid pressure").extractor_scalar();
       const FEValuesExtractors::Scalar ex_p_c = introspection.variable("compaction pressure").extractor_scalar();
 
-      const unsigned int p_f_component_index = introspection.variable("fluid pressure").first_component_index;
-      const unsigned int p_c_component_index = introspection.variable("compaction pressure").first_component_index;
-
-      for (unsigned int i=0, i_stokes=0; i_stokes<stokes_dofs_per_cell; /*increment at end of loop*/)
-        {
-          const unsigned int component_index_i = fe.system_to_component_index(i).first;
-
-          if (is_velocity_or_pressures(introspection,p_c_component_index,p_f_component_index,component_index_i))
-            {
-              data.local_dof_indices[i_stokes] = scratch.local_dof_indices[i];
-              scratch.dof_component_indices[i_stokes] = fe.system_to_component_index(i).first;
-              ++i_stokes;
-            }
-          ++i;
-        }
-
       for (unsigned int q=0; q<n_q_points; ++q)
         {
-          for (unsigned int i=0, i_stokes=0; i_stokes<stokes_dofs_per_cell; /*increment at end of loop*/)
+          for (unsigned int i_stokes=0; i_stokes<stokes_dofs_per_cell; ++i_stokes)
             {
-              const unsigned int component_index_i = fe.system_to_component_index(i).first;
-
-              if (is_velocity_or_pressures(introspection,p_c_component_index,p_f_component_index,component_index_i))
-                {
-                  scratch.phi_p[i_stokes]       = scratch.finite_element_values[ex_p_f].value (i, q);
-                  scratch.phi_p_c[i_stokes]     = scratch.finite_element_values[ex_p_c].value (i, q);
-                  scratch.grad_phi_p[i_stokes]  = scratch.finite_element_values[ex_p_f].gradient (i, q);
-                  ++i_stokes;
-                }
-              ++i;
+              const unsigned int i = introspection.stokes_dof_info[i_stokes].local_dof_index;
+              scratch.phi_p[i_stokes]       = scratch.finite_element_values[ex_p_f].value (i, q);
+              scratch.phi_p_c[i_stokes]     = scratch.finite_element_values[ex_p_c].value (i, q);
+              scratch.grad_phi_p[i_stokes]  = scratch.finite_element_values[ex_p_f].gradient (i, q);
             }
 
           const double eta = scratch.material_model_outputs.viscosities[q];
@@ -283,7 +260,8 @@ namespace aspect
           for (unsigned int i=0; i<stokes_dofs_per_cell; ++i)
             for (unsigned int j=0; j<stokes_dofs_per_cell; ++j)
               {
-                if (scratch.dof_component_indices[i] == scratch.dof_component_indices[j])
+                if (introspection.stokes_dof_info[i].component_index ==
+                    introspection.stokes_dof_info[j].component_index)
                   data.local_matrix(i,j) += ((one_over_eta *
                                               pressure_scaling *
                                               pressure_scaling)
@@ -421,10 +399,12 @@ namespace aspect
       const unsigned int p_f_component_index = introspection.variable("fluid pressure").first_component_index;
       const unsigned int p_c_component_index = introspection.variable("compaction pressure").first_component_index;
 
-      const std::shared_ptr<MaterialModel::MeltOutputs<dim>> melt_outputs
+      const std::shared_ptr<const MaterialModel::MeltOutputs<dim>> melt_outputs
         = scratch.material_model_outputs.template get_additional_output_object<MaterialModel::MeltOutputs<dim>>();
       const std::shared_ptr<const MaterialModel::AdditionalMaterialOutputsStokesRHS<dim>> force
         = scratch.material_model_outputs.template get_additional_output_object<MaterialModel::AdditionalMaterialOutputsStokesRHS<dim>>();
+      const std::shared_ptr<const MaterialModel::ElasticOutputs<dim>> elastic_outputs
+        = scratch.material_model_outputs.template get_additional_output_object<MaterialModel::ElasticOutputs<dim>>();
 
       const double pressure_scaling = this->get_pressure_scaling();
 
@@ -463,6 +443,10 @@ namespace aspect
                     {
                       scratch.grads_phi_u[i_stokes] = scratch.finite_element_values[introspection.extractors.velocities].symmetric_gradient(i,q);
                       scratch.div_phi_u[i_stokes]   = scratch.finite_element_values[introspection.extractors.velocities].divergence (i, q);
+                    }
+                  else if (this->get_parameters().enable_elasticity)
+                    {
+                      scratch.grads_phi_u[i_stokes] = scratch.finite_element_values[introspection.extractors.velocities].symmetric_gradient(i,q);
                     }
                   ++i_stokes;
                 }
@@ -542,6 +526,10 @@ namespace aspect
                                    )
                                    * JxW;
 
+              if (elastic_outputs != nullptr && this->get_parameters().enable_elasticity)
+                data.local_rhs(i) += (elastic_outputs->elastic_force[q] * scratch.grads_phi_u[i])
+                                     * JxW;
+
               if (scratch.rebuild_stokes_matrix)
                 for (unsigned int j=0; j<stokes_dofs_per_cell; ++j)
                   {
@@ -578,6 +566,29 @@ namespace aspect
 
     template <int dim>
     void
+    MeltStokesSystem<dim>::
+    create_additional_material_model_outputs(MaterialModel::MaterialModelOutputs<dim> &outputs) const
+    {
+      MeltInterface<dim>::create_additional_material_model_outputs(outputs);
+      const unsigned int n_points = outputs.n_evaluation_points();
+
+      if (this->get_parameters().enable_elasticity &&
+          !outputs.template has_additional_output_object<MaterialModel::ElasticOutputs<dim>>())
+        {
+          outputs.additional_outputs.push_back(
+            std::make_unique<MaterialModel::ElasticOutputs<dim>> (n_points));
+        }
+
+      Assert(!this->get_parameters().enable_elasticity
+             ||
+             outputs.template get_additional_output_object<MaterialModel::ElasticOutputs<dim>>()->elastic_force.size()
+             == n_points, ExcInternalError());
+    }
+
+
+
+    template <int dim>
+    void
     MeltStokesSystemBoundary<dim>::
     execute (internal::Assembly::Scratch::ScratchBase<dim>   &scratch_base,
              internal::Assembly::CopyData::CopyDataBase<dim> &data_base) const
@@ -597,7 +608,7 @@ namespace aspect
 
       const typename DoFHandler<dim>::face_iterator face = scratch.face_material_model_inputs.current_cell->face(scratch.face_number);
 
-      const std::shared_ptr<MaterialModel::MeltOutputs<dim>> melt_outputs
+      const std::shared_ptr<const MaterialModel::MeltOutputs<dim>> melt_outputs
         = scratch.face_material_model_outputs.template get_additional_output_object<MaterialModel::MeltOutputs<dim>>();
 
       std::vector<double> grad_p_f(n_face_q_points);
@@ -708,7 +719,7 @@ namespace aspect
 
       const FEValuesExtractors::Scalar solution_field = scratch.advection_field->scalar_extractor(introspection);
 
-      const std::shared_ptr<MaterialModel::MeltOutputs<dim>> melt_outputs
+      const std::shared_ptr<const MaterialModel::MeltOutputs<dim>> melt_outputs
         = scratch.material_model_outputs.template get_additional_output_object<MaterialModel::MeltOutputs<dim>>();
 
       Assert(melt_outputs->fluid_densities[0] > 0.0,
@@ -1617,12 +1628,8 @@ namespace aspect
     for_constraints.subtract_set(nonzero_pc_dofs);
 
     // and constrain the remaining dofs (that are not in melt cells).
-#if DEAL_II_VERSION_GTE(9,6,0)
     for (const auto index : for_constraints)
       constraints.constrain_dof_to_zero(index);
-#else
-    constraints.add_lines(for_constraints);
-#endif
   }
 
 
@@ -1665,10 +1672,10 @@ namespace aspect
   edit_finite_element_variables(const Parameters<dim> &parameters,
                                 std::vector<VariableDeclaration<dim>> &variables)
   {
+    // We should only get here if melt transport is included:
+    Assert (parameters.include_melt_transport, ExcInternalError());
 
-    if (!parameters.include_melt_transport)
-      return;
-
+    // We modify the existing FE variables: u p T c1 c2 to read: u p_f p_c u_f p T c1 c2
     variables.insert(variables.begin()+1,
                      VariableDeclaration<dim>(
                        "fluid pressure",
@@ -1694,7 +1701,34 @@ namespace aspect
                                               std::make_shared<FE_Q<dim>>(parameters.stokes_velocity_degree),
                                               dim,
                                               1));
+  }
 
+
+
+  template <int dim>
+  void
+  MeltHandler<dim>::
+  initialize_stokes_dof_info(Introspection<dim> &introspection,
+                             const FiniteElement<dim> &finite_element) const
+  {
+    const unsigned int fluid_pressure_component =
+      introspection.variable("fluid pressure").first_component_index;
+    const unsigned int compaction_pressure_component =
+      introspection.variable("compaction pressure").first_component_index;
+
+    introspection.stokes_dof_info.clear();
+    introspection.stokes_dof_info.reserve(finite_element.dofs_per_cell);
+
+    for (unsigned int i = 0; i < finite_element.dofs_per_cell; ++i)
+      {
+        const unsigned int component_index = finite_element.system_to_component_index(i).first;
+
+        if (Assemblers::is_velocity_or_pressures(introspection,
+                                                 compaction_pressure_component,
+                                                 fluid_pressure_component,
+                                                 component_index))
+          introspection.stokes_dof_info.push_back({i, component_index});
+      }
   }
 
 
@@ -1747,6 +1781,20 @@ namespace aspect
             (i>0 && this->get_parameters().compositional_field_methods[i-1] == Parameters<dim>::AdvectionFieldMethod::fem_melt_field))
           assemblers.advection_system[i].push_back(
             std::make_unique<Assemblers::MeltAdvectionSystem<dim>> ());
+
+        // non-melt discontinuous compositional fields need the face terms of the DG formulation.
+        if (i>0
+            && this->get_parameters().use_discontinuous_composition_discretization[i-1])
+          {
+            assemblers.advection_system_on_boundary_face[i].push_back(
+              std::make_unique<aspect::Assemblers::AdvectionSystemBoundaryFace<dim>>());
+
+            assemblers.advection_system_on_interior_face[i].push_back(
+              std::make_unique<aspect::Assemblers::AdvectionSystemInteriorFace<dim>>());
+
+            assemblers.advection_system_assembler_on_face_properties[i].need_face_material_model_data = true;
+            assemblers.advection_system_assembler_on_face_properties[i].need_face_finite_element_evaluation = true;
+          }
 
         if (this->get_parameters().fixed_heat_flux_boundary_indicators.size() != 0)
           {
@@ -1843,12 +1891,32 @@ namespace aspect
   void
   MeltHandler<dim>::initialize () const
   {
-    // The additional terms in the temperature systems have not been ported
+    // The additional terms in the temperature system have not been ported
     // to the DG formulation:
-    AssertThrow(!this->get_parameters().use_discontinuous_temperature_discretization &&
-                !this->get_parameters().have_discontinuous_composition_discretization,
+    AssertThrow(!this->get_parameters().use_discontinuous_temperature_discretization,
                 ExcMessage("Using discontinuous elements for temperature "
-                           "or composition in models with melt transport is currently not implemented.") );
+                           "in models with melt transport is currently not implemented.") );
+
+    // In models with melt transport, the assemblers for compositional
+    // fields that are advected as finite element fields (except for porosity
+    // and melt-advected fields) can include discontinuous Galerkin face terms.
+    // Compositional fields that are not advected as finite element fields,
+    // for example fields tracked by particles, can also use discontinuous
+    // elements.
+    for (unsigned int c=0; c<this->introspection().n_compositional_fields; ++c)
+      {
+        const typename Parameters<dim>::AdvectionFieldMethod::Kind method =
+          this->get_parameters().compositional_field_methods[c];
+
+        if (this->get_parameters().use_discontinuous_composition_discretization[c])
+          AssertThrow(method != Parameters<dim>::AdvectionFieldMethod::fem_melt_field &&
+                      !this->is_porosity(AdvectionField::composition(c)),
+                      ExcMessage("Using discontinuous elements for the porosity field "
+                                 "or for compositional fields that are advected with the "
+                                 "melt velocity is currently not implemented in models "
+                                 "with melt transport.") );
+      }
+
     if (melt_parameters.use_discontinuous_p_c)
       AssertThrow(!this->model_has_prescribed_stokes_solution(),
                   ExcMessage("You can not use a discontinuous p_c in a model "

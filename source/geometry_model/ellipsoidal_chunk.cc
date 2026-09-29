@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2011 - 2024 by the authors of the ASPECT code.
+  Copyright (C) 2011 - 2026 by the authors of the ASPECT code.
 
   This file is part of ASPECT.
 
@@ -18,7 +18,7 @@
   <http://www.gnu.org/licenses/>.
 */
 
-
+#include <algorithm>
 #include <aspect/geometry_model/ellipsoidal_chunk.h>
 #include <aspect/utilities.h>
 #include <aspect/geometry_model/initial_topography_model/prm_polygon.h>
@@ -615,7 +615,7 @@ namespace aspect
     double
     EllipsoidalChunk<dim>::depth(const Point<dim> &position) const
     {
-      return std::max(std::min(-manifold->pull_back(position)[dim-1], maximal_depth()), 0.0);
+      return std::clamp(-manifold->pull_back(position)[dim-1], 0.0, maximal_depth());
     }
 
     template <int dim>

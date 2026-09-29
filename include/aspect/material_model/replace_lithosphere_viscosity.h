@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2014 - 2024 by the authors of the ASPECT code.
+  Copyright (C) 2014 - 2026 by the authors of the ASPECT code.
 
   This file is part of ASPECT.
 
@@ -82,6 +82,8 @@ namespace aspect
 
         /**
          * This parameter gives the viscosity set within the lithosphere.
+         *
+         * This variable is read from the parameter file through a parameter called 'Lithosphere viscosity'.
          */
         double lithosphere_viscosity;
 

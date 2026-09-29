@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2011 - 2024 by the authors of the ASPECT code.
+  Copyright (C) 2011 - 2026 by the authors of the ASPECT code.
 
   This file is part of ASPECT.
 
@@ -384,7 +384,7 @@ namespace aspect
           prm.declare_entry ("Thermal expansion coefficient in initial temperature scaling", "2e-5",
                              Patterns::Double (0.),
                              "The value of the thermal expansion coefficient $\\beta$. "
-                             "Units: $\\frac{1}{\\text{K}}$.");
+                             "Units: \\si{\\per\\kelvin}.");
           prm.declare_entry ("Use thermal expansion coefficient from material model", "false",
                              Patterns::Bool (),
                              "Option to take the thermal expansion coefficient from the "

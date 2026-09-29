@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2011 - 2025 by the authors of the ASPECT code.
+  Copyright (C) 2011 - 2026 by the authors of the ASPECT code.
 
   This file is part of ASPECT.
 
@@ -114,6 +114,8 @@ namespace aspect
           /**
            * Vector of reference densities $\rho_0$ with one entry per composition and phase plus one
            * for the background field.
+           *
+           * This variable is read from the parameter file through a parameter called 'Reference densities'.
            */
           std::vector<double> reference_densities;
 
@@ -121,35 +123,42 @@ namespace aspect
           /**
            * Vector of reference temperatures $T_0$ with one entry per composition and phase plus one
            * for the background field.
+           * This variable is read from the parameter file through a parameter called 'Reference temperatures'.
            */
           std::vector<double> reference_temperatures;
 
           /**
            * Vector of reference compressibilities, with one entry per composition and phase plus one
            * for the background field.
+           * This variable is read from the parameter file through a parameter called 'Reference isothermal compressibilities'.
            */
           std::vector<double> reference_isothermal_compressibilities;
 
           /**
            * Vector of isothermal bulk modulus pressure derivatives with one entry per composition and phase plus one
            * for the background field.
+           * This variable is read from the parameter file through a parameter called 'Isothermal bulk modulus pressure derivatives'.
            */
           std::vector<double> isothermal_bulk_modulus_pressure_derivatives;
 
           /**
            * Vector of reference thermal expansivities, with one entry per composition and phase plus one
            * for the background field.
+           * This variable is read from the parameter file through a parameter called 'Reference thermal expansivities'.
            */
           std::vector<double> reference_thermal_expansivities;
 
           /**
            * Vector of isochoric specific heats, with one entry per composition and phase plus one
            * for the background field.
+           * This variable is read from the parameter file through a parameter called 'Isochoric specific heats'.
            */
           std::vector<double> isochoric_specific_heats;
 
           /**
            * Whether to enable the use of phase transitions, which currently breaks thermodynamic consistency
+           *
+           * This variable is read from the parameter file through a parameter called 'Enable phase transitions'.
            */
           bool enable_phase_transitions;
       };

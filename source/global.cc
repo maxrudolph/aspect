@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2011 - 2024 by the authors of the ASPECT code.
+  Copyright (C) 2011 - 2026 by the authors of the ASPECT code.
 
   This file is part of ASPECT.
 
@@ -31,6 +31,7 @@
 #endif
 
 #include <cstring>
+#include <fstream>
 
 #include <mpi.h>
 
@@ -93,6 +94,13 @@ namespace aspect
       stream << " (" << WorldBuilder::Version::GIT_BRANCH << ", " << WorldBuilder::Version::GIT_SHA1.substr(0,9) << ')';
 
     stream << '\n';
+#endif
+
+#ifdef ASPECT_WITH_FASTSCAPE
+    stream << "--     . using FastScape "
+           << FASTSCAPE_VERSION_MAJOR << '.'
+           << FASTSCAPE_VERSION_MINOR << '.'
+           << FASTSCAPE_VERSION_SUBMINOR << '\n';
 #endif
 
 #ifdef DEBUG

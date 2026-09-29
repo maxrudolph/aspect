@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2018 - 2024 by the authors of the ASPECT code.
+  Copyright (C) 2018 - 2026 by the authors of the ASPECT code.
 
   This file is part of ASPECT.
 
@@ -78,6 +78,9 @@ namespace aspect
         /**
          * Parameter to determine how much smaller the time step should be
          * repeated as.
+         *
+         * This variable is read from the parameter file through a parameter
+         * called 'Cut back factor'.
          */
         double cut_back_factor;
 

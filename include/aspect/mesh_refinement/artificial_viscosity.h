@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2015 - 2019 by the authors of the ASPECT code.
+  Copyright (C) 2015 - 2026 by the authors of the ASPECT code.
 
   This file is part of ASPECT.
 
@@ -64,11 +64,15 @@ namespace aspect
 
         /**
          * Scaling factor for the temperature indicator.
+         *
+         * This variable is read from the parameter file through a parameter called 'Temperature scaling factor'.
          */
         double temperature_scaling_factor;
 
         /**
          * The scaling factors for each compositional field.
+         *
+         * This variable is read from the parameter file through a parameter called 'Compositional field scaling factors'.
          */
         std::vector<double> composition_scaling_factors;
     };

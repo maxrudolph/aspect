@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2025 - by the authors of the ASPECT code.
+  Copyright (C) 2025 - 2026 - by the authors of the ASPECT code.
 
   This file is part of ASPECT.
 
@@ -62,6 +62,8 @@ namespace aspect
         private:
           /**
            * The thermal conductivity.
+           *
+           * This variable is read from the parameter file through a parameter called 'Thermal conductivity'.
            */
           double k;
       };

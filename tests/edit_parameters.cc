@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2022 - 2023 by the authors of the ASPECT code.
+  Copyright (C) 2022 - 2026 by the authors of the ASPECT code.
 
   This file is part of ASPECT.
 
@@ -41,7 +41,7 @@ namespace aspect
   }
 
   template <int dim>
-  void parse_parameters(const Parameters<dim>,
+  void parse_parameters(const Parameters<dim> &,
                         ParameterHandler &prm)
   {
     switch_step = prm.get_integer("Switch step");

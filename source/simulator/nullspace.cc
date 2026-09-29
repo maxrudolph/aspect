@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2011 - 2024 by the authors of the ASPECT code.
+  Copyright (C) 2011 - 2026 by the authors of the ASPECT code.
 
   This file is part of ASPECT.
 
@@ -194,11 +194,7 @@ namespace aspect
                 {
                   Assert(!constraints.is_constrained((global_idx)),
                          ExcInternalError());
-#if DEAL_II_VERSION_GTE(9,6,0)
                   constraints.constrain_dof_to_zero(global_idx);
-#else
-                  constraints.add_line(global_idx);
-#endif
                 }
             }
       }

@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2015 - 2019 by the authors of the ASPECT code.
+  Copyright (C) 2015 - 2026 by the authors of the ASPECT code.
 
   This file is part of ASPECT.
 
@@ -67,6 +67,8 @@ namespace aspect
         /**
          * The thresholds that should be used for the individual
          * compositional fields.
+         *
+         * This variable is read from the parameter file through a parameter called 'Compositional field thresholds'.
          */
         std::vector<double> composition_thresholds;
     };

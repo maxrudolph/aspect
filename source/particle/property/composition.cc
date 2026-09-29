@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2015 - 2024 by the authors of the ASPECT code.
+  Copyright (C) 2015 - 2026 by the authors of the ASPECT code.
 
  This file is part of ASPECT.
 
@@ -116,7 +116,7 @@ namespace aspect
                                         "composition",
                                         "Implementation of a plugin in which the particle "
                                         "property is defined by the compositional fields in "
-                                        "the model. This can be used to track solid composition"
+                                        "the model. This can be used to track solid composition "
                                         "evolution over time.")
     }
   }

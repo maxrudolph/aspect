@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2019 - 2024 by the authors of the ASPECT code.
+  Copyright (C) 2019 - 2026 by the authors of the ASPECT code.
 
   This file is part of ASPECT.
 
@@ -188,6 +188,13 @@ namespace aspect
         void
         parse_parameters (ParameterHandler &prm) override;
 
+        template <class Archive>
+        void
+        serialize (Archive &ar, const unsigned int)
+        {
+          ar &termination_manager;
+        }
+
         /**
          * For the current plugin subsystem, write a connection graph of all of the
          * plugins we know about, in the format that the
@@ -240,12 +247,18 @@ namespace aspect
 
         /**
          * The minimum time step size specified by the user (in seconds).
+         *
+         * This variable is read from the parameter file through a parameter
+         * called 'Minimum time step size'.
          */
         double minimum_time_step_size;
 
         /**
          * Whether to do a final checkpoint before termination. This is
          * specified in the parameters.
+         *
+         * This variable is read from the parameter file through a parameter
+         * called 'Checkpoint on termination'.
          */
         bool do_checkpoint_on_terminate;
 

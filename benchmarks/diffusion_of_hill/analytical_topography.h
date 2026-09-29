@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2020 - 2023 by the authors of the ASPECT code.
+  Copyright (C) 2020 - 2026 by the authors of the ASPECT code.
 
   This file is part of ASPECT.
 
@@ -24,6 +24,8 @@
 
 #include <aspect/postprocess/interface.h>
 #include <aspect/simulator_access.h>
+
+#include <limits>
 
 
 namespace aspect
@@ -82,7 +84,7 @@ namespace aspect
          * A time (in seconds) at which the last text output was supposed
          * to be produced. Used to check for the next necessary output time.
          */
-        double last_output_time;
+        double last_output_time = std::numeric_limits<double>::lowest();
 
         /**
          * The amplitude of the sinusoidal initial topography.

@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2016 - 2022 by the authors of the ASPECT code.
+  Copyright (C) 2016 - 2026 by the authors of the ASPECT code.
 
   This file is part of ASPECT.
 
@@ -61,8 +61,17 @@ namespace aspect
         execute (TableHandler &statistics) override;
 
       private:
+        /**
+         * This variable is read from the parameter file through a parameter called 'Command'.
+         */
         std::string command;
+        /**
+         * This variable is read from the parameter file through a parameter called 'Terminate on failure'.
+         */
         bool terminate_on_failure;
+        /**
+         * This variable is read from the parameter file through a parameter called 'Run on all processes'.
+         */
         bool on_all_processes;
     };
   }

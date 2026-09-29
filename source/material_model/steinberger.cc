@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2011 - 2024 by the authors of the ASPECT code.
+  Copyright (C) 2011 - 2026 by the authors of the ASPECT code.
 
   This file is part of ASPECT.
 
@@ -18,6 +18,7 @@
   <http://www.gnu.org/licenses/>.
 */
 
+#include <algorithm>
 
 #include <aspect/material_model/steinberger.h>
 #include <aspect/material_model/rheology/visco_plastic.h>
@@ -195,7 +196,7 @@ namespace aspect
       const double log_thermal_prefactor = -1.0 * lateral_viscosity_lookup->lateral_viscosity(depth) * delta_temperature / (in.temperature[q] * adiabatic_temperature);
 
       // Limit the lateral viscosity variation to a reasonable interval
-      const double thermal_prefactor = std::max(std::min(std::exp(log_thermal_prefactor), max_lateral_eta_variation), 1/max_lateral_eta_variation);
+      const double thermal_prefactor = std::clamp(std::exp(log_thermal_prefactor), 1/max_lateral_eta_variation, max_lateral_eta_variation);
 
       const double compositional_prefactor = MaterialUtilities::average_value (volume_fractions, viscosity_prefactors, viscosity_averaging_scheme);
 
@@ -310,7 +311,7 @@ namespace aspect
           if (in.requests_property(MaterialProperties::viscosity) || in.requests_property(MaterialProperties::additional_outputs))
             {
               out.viscosities[i] = viscosity(i, volume_fractions[i], in, out);
-              out.viscosities[i] = std::max(std::min(out.viscosities[i], max_eta), min_eta);
+              out.viscosities[i] = std::clamp(out.viscosities[i], min_eta, max_eta);
             }
 
           MaterialUtilities::fill_averaged_equation_of_state_outputs(eos_outputs[i], mass_fractions, volume_fractions[i], i, out);
@@ -395,7 +396,7 @@ namespace aspect
                              "List of N prefactors that are used to modify the reference viscosity, "
                              "where N is either equal to one or the number of chemical components "
                              "in the simulation. If only one value is given, then all components "
-                             "use the same value. Units: $\\text{Pa}\\text{s}$.");
+                             "use the same value. Units: \\si{\\pascal\\second}.");
           prm.declare_entry ("Viscosity averaging scheme", "harmonic",
                              Patterns::Selection("arithmetic|harmonic|geometric|maximum composition"),
                              "Method to average viscosities over multiple compositional fields. "

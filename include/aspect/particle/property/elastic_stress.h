@@ -1,5 +1,5 @@
 /*
- Copyright (C) 2015 - 2024 by the authors of the ASPECT code.
+ Copyright (C) 2015 - 2026 by the authors of the ASPECT code.
 
  This file is part of ASPECT.
 
@@ -140,6 +140,9 @@ namespace aspect
            * weighted average with the stress values interpolated from the compositional
            * fields to the particle location. The default value of 1 is more accurate,
            * but can be less stable.
+           *
+           * This variable is read from the parameter file through a parameter
+           * called 'Particle stress value weight'.
            */
           double particle_weight;
       };

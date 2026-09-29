@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2011 - 2025 by the authors of the ASPECT code.
+  Copyright (C) 2011 - 2026 by the authors of the ASPECT code.
 
   This file is part of ASPECT.
 
@@ -96,6 +96,8 @@ namespace aspect
         /**
          * The coordinate representation to evaluate the function. Possible
          * choices are depth, cartesian and spherical.
+         *
+         * This variable is read from the parameter file through a parameter called 'Coordinate system'.
          */
         Utilities::Coordinates::CoordinateSystem coordinate_system;
     };

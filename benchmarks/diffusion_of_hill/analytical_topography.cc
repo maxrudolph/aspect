@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2020 - 2023 by the authors of the ASPECT code.
+  Copyright (C) 2020 - 2026 by the authors of the ASPECT code.
 
   This file is part of ASPECT.
 
@@ -22,7 +22,7 @@
 #include "analytical_topography.h"
 #include <aspect/geometry_model/two_merged_boxes.h>
 #include <aspect/geometry_model/box.h>
-#include <aspect/simulator.h>
+
 #include <aspect/global.h>
 
 #include <deal.II/fe/fe_values.h>
@@ -231,7 +231,7 @@ namespace aspect
       // if this is the first time we get here, set the last output time
       // to the current time - output_interval. this makes sure we
       // always produce data during the first time step
-      if (std::isnan(last_output_time))
+      if (last_output_time < this->get_parameters().start_time - output_interval)
         {
           last_output_time = this->get_time() - output_interval;
         }

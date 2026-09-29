@@ -1,5 +1,5 @@
 /*
- Copyright (C) 2022 - 2024 by the authors of the ASPECT code.
+ Copyright (C) 2022 - 2026 by the authors of the ASPECT code.
 
  This file is part of ASPECT.
 
@@ -141,6 +141,9 @@ namespace aspect
            */
           void
           initialize () override;
+
+          void
+          update () override;
 
           /**
            * Initialization function. This function is called once at the
@@ -532,10 +535,25 @@ namespace aspect
 
           /**
            * Random number generator used for initialization of particles
+           *
+           * This variable is not considered part of the state of the particle
+           * manager and is consequently not serialized. It is re-initialized in the
+           * initialize() and update() functions at the beginning of each time step, and so
+           * has a deterministic state at the beginning of each time step. It
+           * does not need to be restored from a checkpoint.
            */
           mutable boost::mt19937 random_number_generator;
+
+          /**
+           * This variable is read from the parameter file through a parameter
+           * called 'Random number seed'.
+           */
           unsigned int random_number_seed;
 
+          /**
+           * This variable is read from the parameter file through a parameter
+           * called 'Number of grains per particle'.
+           */
           unsigned int n_grains;
 
           unsigned int n_minerals;
@@ -555,28 +573,39 @@ namespace aspect
 
           /**
            * Store the volume fraction for each mineral.
+           *
+           * This variable is read from the parameter file through a parameter
+           * called 'Volume fractions minerals'.
            */
           std::vector<double> volume_fractions_minerals;
 
           /**
            * Advection method for particle properties
+           * This variable is read from the parameter file through a parameter
+           * called 'Property advection method'.
            */
           AdvectionMethod advection_method;
 
           /**
            * What algorithm to use to compute the derivatives
+           * This variable is read from the parameter file through a parameter
+           * called 'CPO derivatives algorithm'.
            */
           CPODerivativeAlgorithm cpo_derivative_algorithm;
 
           /**
            * This value determines the tolerance used for the Backward Euler and
            * Crank-Nicolson iterations.
+           * This variable is read from the parameter file through a parameter
+           * called 'Property advection tolerance'.
            */
           double property_advection_tolerance;
 
           /**
            * This value determines the the maximum number of iterations used for the
            * Backward Euler and Crank-Nicolson iterations.
+           * This variable is read from the parameter file through a parameter
+           * called 'Property advection max iterations'.
            */
           unsigned int property_advection_max_iterations;
 
@@ -586,17 +615,23 @@ namespace aspect
           /** @{ */
           /**
            * Stress exponent
+           * This variable is read from the parameter file through a parameter
+           * called 'Stress exponents'.
            */
           double stress_exponent;
 
           /**
            * efficiency of nucleation parameter.
            * lambda_m in equation 8 of Kaminski et al. (2004, Geophys. J. Int)
+           * This variable is read from the parameter file through a parameter
+           * called 'Nucleation efficiency'.
            */
           double nucleation_efficiency;
 
           /**
            * An exponent described in equation 10 of Kaminski and Ribe (2001, EPSL)
+           * This variable is read from the parameter file through a parameter
+           * called 'Exponents p'.
            */
           double exponent_p;
 
@@ -604,17 +639,23 @@ namespace aspect
            * The Dimensionless Grain Boundary Sliding (GBS) threshold.
            * This is a grain size threshold below which grain deform by GBS and
            * become strain-free grains.
+           * This variable is read from the parameter file through a parameter
+           * called 'Threshold GBS'.
            */
           double threshold_GBS;
 
           /**
            * Dimensionless grain boundary mobility as described by equation 14
            * in Kaminski and Ribe (2001, EPSL).
+           * This variable is read from the parameter file through a parameter
+           * called 'Mobility'.
            */
           double mobility;
 
           /**
            * Sets which type of initial grain model is used to create the gain sizes and orientations
+           * This variable is read from the parameter file through a parameter
+           * called 'Model name'.
            */
           CPOInitialGrainsModel initial_grains_model;
 
@@ -628,7 +669,9 @@ namespace aspect
            * but Bascou etal., 2002 JSG using VPSC provides a reference, which is
            * supported by experimental work from Zhang et al., 2006 EPSL
            * that agree with the three main slip systems
-          */
+           * This variable is read from the parameter file through a parameter
+           * called 'CPX RRSS'.
+           */
           std::vector<double> CPX_RRSS;
 
           /**
@@ -639,7 +682,10 @@ namespace aspect
            * The RRSS notation is defined in Kaminski etal., 2004 and
            * see Fraters and Billen 2021 for details;
            * Main slip systems from Karato 2008 and Bystricky et al., 2001
-          */
+           *
+           * This variable is read from the parameter file through a parameter
+           * called 'OlivineD RRSS'.
+           */
           std::vector<double> OlivineD_RRSS;
 
           /** @} */

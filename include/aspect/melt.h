@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2016 - 2024 by the authors of the ASPECT code.
+  Copyright (C) 2016 - 2026 by the authors of the ASPECT code.
 
   This file is part of ASPECT.
 
@@ -298,6 +298,9 @@ namespace aspect
         void
         execute(internal::Assembly::Scratch::ScratchBase<dim>   &scratch_base,
                 internal::Assembly::CopyData::CopyDataBase<dim> &data_base) const override;
+
+        void
+        create_additional_material_model_outputs(MaterialModel::MaterialModelOutputs<dim> &outputs) const override;
     };
 
 
@@ -452,6 +455,15 @@ namespace aspect
        */
       void edit_finite_element_variables(const Parameters<dim> &parameters,
                                          std::vector<VariableDeclaration<dim>> &variables);
+
+      /**
+       * Replace introspection.stokes_dof_info with the local DoFs of the melt
+       * Stokes system (velocity, fluid pressure, and compaction pressure).
+       * Called from Simulator::setup_introspection() after the default
+       * (non-melt) Stokes DoF cache has been built.
+       */
+      void initialize_stokes_dof_info(Introspection<dim> &introspection,
+                                      const FiniteElement<dim> &finite_element) const;
 
       /**
        * Determine, based on the run-time parameters of the current simulation,

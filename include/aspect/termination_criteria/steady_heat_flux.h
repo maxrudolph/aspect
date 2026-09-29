@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2021 by the authors of the ASPECT code.
+  Copyright (C) 2021 - 2026 by the authors of the ASPECT code.
 
   This file is part of ASPECT.
 
@@ -62,22 +62,36 @@ namespace aspect
         void
         parse_parameters (ParameterHandler &prm) override;
 
+        void
+        save (std::map<std::string, std::string> &status_strings) const override;
+
+        void
+        load (const std::map<std::string, std::string> &status_strings) override;
+
       private:
         /**
          * The minimum length of simulation time that the system
          * should be in steady state before termination.
+         *
+         * This variable is read from the parameter file through a parameter
+         * called 'Time in steady state'.
          */
         double necessary_time_in_steady_state;
 
         /**
          * The maximum relative deviation of the heat flux in recent
          * simulation time for the system to be considered in steady state.
+         * This variable is read from the parameter file through a parameter
+         * called 'Maximum relative deviation'.
          */
         double allowed_relative_deviation;
 
         /**
          * A set of boundary ids on which the average heat flux will be
          * computed.
+         *
+         * This variable is read from the parameter file through a parameter
+         * called 'Boundary indicators'.
          */
         std::set<types::boundary_id> boundary_indicators;
 

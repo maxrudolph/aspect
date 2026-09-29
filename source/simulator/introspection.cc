@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2011 - 2024 by the authors of the ASPECT code.
+  Copyright (C) 2011 - 2026 by the authors of the ASPECT code.
 
   This file is part of ASPECT.
 
@@ -610,6 +610,24 @@ namespace aspect
         return true;
 
     return false;
+  }
+
+
+
+  template <int dim>
+  void
+  Introspection<dim>::initialize_stokes_dof_info (const FiniteElement<dim> &finite_element)
+  {
+    stokes_dof_info.clear();
+
+    stokes_dof_info.reserve(finite_element.dofs_per_cell);
+
+    for (unsigned int i = 0; i < finite_element.dofs_per_cell; ++i)
+      {
+        const unsigned int component_index = finite_element.system_to_component_index(i).first;
+        if (is_stokes_component(component_index))
+          stokes_dof_info.push_back({i, component_index});
+      }
   }
 
 

@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2011 - 2024 by the authors of the ASPECT code.
+  Copyright (C) 2011 - 2026 by the authors of the ASPECT code.
 
   This file is part of ASPECT.
 
@@ -222,9 +222,9 @@ namespace aspect
       ASPECT_REGISTER_VISUALIZATION_POSTPROCESSOR(DensityAnomaly,
                                                   "density anomaly",
                                                   "A visualization output postprocessor that outputs the density minus the depth-average of the density."
-                                                  "In the ``lateral average'' scheme, the average density is calculated using the lateral averaging function"
+                                                  "In the ``lateral average'' scheme, the average density is calculated using the lateral averaging function "
                                                   "from the ``depth average'' postprocessor and interpolated linearly between the layers specified through "
-                                                  "``Number of depth slices''. In the ``reference profile'' scheme, the adiabatic density is used as the"
+                                                  "``Number of depth slices''. In the ``reference profile'' scheme, the adiabatic density is used as the "
                                                   "average density."
                                                   "\n\n"
                                                   "Physical units: \\si{\\kg/m^3}.")

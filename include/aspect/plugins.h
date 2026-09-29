@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2011 - 2024 by the authors of the ASPECT code.
+  Copyright (C) 2011 - 2026 by the authors of the ASPECT code.
 
   This file is part of ASPECT.
 
@@ -154,8 +154,8 @@ namespace aspect
          * The default implementation of this function does nothing, but
          * plugins that derive from this class (via the <code>Interface</code>
          * classes of their respective plugin systems) may overload it
-         * if they want something to happen upon startup of the
-         * Simulator object to which the plugin contributes.
+         * if they want something to happen at the start of each time
+         * step.
          */
         virtual
         void
@@ -327,9 +327,9 @@ namespace aspect
         using InterfaceBase::save;
 
         /**
-           * Read the data of this object from a stream for the purpose of
-           * serialization.
-           */
+         * Read the data of this object from a stream for the purpose of
+         * serialization.
+         */
         template <class Archive>
         void load (Archive &ar,
                    const unsigned int version);

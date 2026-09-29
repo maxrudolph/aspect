@@ -1,5 +1,5 @@
 /*
- Copyright (C) 2015 - 2024 by the authors of the ASPECT code.
+ Copyright (C) 2015 - 2026 by the authors of the ASPECT code.
 
  This file is part of ASPECT.
 
@@ -144,6 +144,9 @@ namespace aspect
           /**
            * Whether to evaluate old and current velocity to compute a solution
            * that is higher order accurate in time.
+           *
+           * This variable is read from the parameter file through a parameter
+           * called 'Higher order accurate in time'.
            */
           bool higher_order_in_time;
       };

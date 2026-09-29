@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2011 - 2024 by the authors of the ASPECT code.
+  Copyright (C) 2011 - 2026 by the authors of the ASPECT code.
 
   This file is part of ASPECT.
 
@@ -815,7 +815,7 @@ namespace aspect
   {
     ASPECT_REGISTER_MATERIAL_MODEL(ShearBandsMaterial,
                                    "shear bands material",
-                                   "A material model that corresponds to the setup to"
+                                   "A material model that corresponds to the setup to "
                                    "generate magmatic shear bands described in Katz et al., "
                                    "Nature, 2006.")
 

@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2025 - by the authors of the ASPECT code.
+  Copyright (C) 2025 - 2026 - by the authors of the ASPECT code.
 
   This file is part of ASPECT.
 
@@ -44,7 +44,7 @@ namespace aspect
         prm.declare_entry ("Thermal conductivity", "4.7",
                            Patterns::Double (0.),
                            "The value of the thermal conductivity $k$. "
-                           "Units: $\\frac{\\text{W}}{\\text{m}\\text{K}}$.");
+                           "Units: \\si{\\watt\\per\\meter\\per\\kelvin}.");
       }
 
 

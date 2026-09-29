@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2014 - 2023 by the authors of the ASPECT code.
+  Copyright (C) 2014 - 2026 by the authors of the ASPECT code.
 
   This file is part of ASPECT.
 
@@ -151,7 +151,9 @@ namespace aspect
 
       private:
         /**
-         * Radius of the sphere
+         * Radius of the sphere.
+         *
+         * This variable is read from the parameter file through a parameter called 'Radius'.
          */
         double R;
     };

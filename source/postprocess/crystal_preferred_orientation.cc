@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2022 - 2024 by the authors of the ASPECT code.
+  Copyright (C) 2022 - 2026 by the authors of the ASPECT code.
  This file is part of ASPECT.
  ASPECT is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -39,7 +39,7 @@ namespace aspect
       output_interval (0),
       // initialize this to a nonsensical value; set it to the actual time
       // the first time around we get to check it
-      last_output_time (std::numeric_limits<double>::quiet_NaN()),
+      last_output_time (std::numeric_limits<double>::lowest()),
       output_file_number (numbers::invalid_unsigned_int),
       group_files(0),
       write_in_background_thread(false)
@@ -177,7 +177,7 @@ namespace aspect
           if (this->get_particle_manager(i).get_property_manager().template has_matching_active_plugin<Particle::Property::CrystalPreferredOrientation<dim>>())
             {
               Assert(particle_manager_index == numbers::invalid_unsigned_int,
-                     ExcMessage("Multiple particle worlds with CPO data found. This is not supported."));
+                     ExcMessage("Multiple particle managers with CPO data found. This is not supported."));
 
               particle_manager_index = i;
             }
@@ -201,7 +201,7 @@ namespace aspect
       // if this is the first time we get here, set the last output time
       // to the current time - output_interval. this makes sure we
       // always produce data during the first time step
-      if (std::isnan(last_output_time))
+      if (last_output_time < this->get_parameters().start_time - output_interval)
         last_output_time = this->get_time() - output_interval;
 
       // If it's not time to generate an output file or we do not write output
@@ -666,9 +666,9 @@ namespace aspect
                              "The time interval between each generation of "
                              "output files. A value of zero indicates that "
                              "output should be generated every time step.\n\n"
-                             "Units: years if the "
+                             "Units: \\si{\\year} if the "
                              "'Use years instead of seconds' parameter is set; "
-                             "seconds otherwise.");
+                             "\\si{\\second} otherwise.");
 
           prm.declare_entry ("Random number seed", "1",
                              Patterns::Integer (0),

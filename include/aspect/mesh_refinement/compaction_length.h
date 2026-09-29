@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2015 - 2019 by the authors of the ASPECT code.
+  Copyright (C) 2015 - 2026 by the authors of the ASPECT code.
 
   This file is part of ASPECT.
 
@@ -70,6 +70,8 @@ namespace aspect
         /**
          * The desired ratio between compaction length and size of the mesh cells,
          * in other words, how many cells the mesh should have per compaction length.
+         *
+         * This variable is read from the parameter file through a parameter called 'Mesh cells per compaction length'.
          */
         double cells_per_compaction_length;
     };

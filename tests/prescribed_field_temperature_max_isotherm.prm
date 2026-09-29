@@ -1,4 +1,4 @@
-set Additional shared libraries = ./libprescribed_temperature_in_field.so
+set Additional shared libraries = ./libprescribed_field_temperature_max_isotherm.so
 
 include $ASPECT_SOURCE_DIR/tests/prescribed_temperature_in_field.prm
 
@@ -13,7 +13,7 @@ subsection Prescribed internal temperature model
 end
 
 subsection Initial temperature model
-  set Model name = function
+  set List of model names = function
 
   subsection Function
     set Function expression = if(x>=0.4, if(y<=0.5, 600, 400), 1000)
